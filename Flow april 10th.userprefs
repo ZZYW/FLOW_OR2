@@ -1,0 +1,19 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/flightSimulator.cs">
+    <Files>
+      <File FileName="Assets/raiseWater.cs" Line="1" Column="1" />
+      <File FileName="Assets/flyMe.cs" Line="18" Column="51" />
+      <File FileName="Assets/raiseWater.cs" Line="1" Column="1" />
+      <File FileName="Assets/countBuilding.cs" Line="1" Column="1" />
+      <File FileName="Assets/sinkBuilding.cs" Line="1" Column="1" />
+      <File FileName="Assets/OVR/Scripts/OVRPlayerController.cs" Line="1" Column="1" />
+      <File FileName="Assets/seeBuilding.cs" Line="1" Column="1" />
+      <File FileName="Assets/flightSimulator.cs" Line="39" Column="3" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

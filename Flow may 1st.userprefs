@@ -1,0 +1,16 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/masterAudio.cs">
+    <Files>
+      <File FileName="Assets/raiseWater.cs" Line="40" Column="6" />
+      <File FileName="Assets/masterAudio.cs" Line="15" Column="3" />
+      <File FileName="Assets/Uniduino/Scripts/Arduino.Firmata.cs" Line="132" Column="1" />
+      <File FileName="Assets/sinkBuilding.cs" Line="8" Column="5" />
+      <File FileName="Assets/myReading.cs" Line="80" Column="5" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

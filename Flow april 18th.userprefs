@@ -1,0 +1,17 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/myReading.cs">
+    <Files>
+      <File FileName="Assets/sinkTerrain.cs" Line="1" Column="1" />
+      <File FileName="Assets/sinkBuilding.cs" Line="1" Column="1" />
+      <File FileName="Assets/raiseWater.cs" Line="1" Column="1" />
+      <File FileName="Assets/sphereColor.cs" Line="1" Column="1" />
+      <File FileName="Assets/myReading.cs" Line="23" Column="50" />
+      <File FileName="Assets/myReadingBackup.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
