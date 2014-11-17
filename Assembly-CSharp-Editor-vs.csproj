@@ -5,7 +5,7 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{1D0BAE16-03A8-EE83-9226-A544EE28AE06}</ProjectGuid>
+	<ProjectGuid>{3B9607D6-9021-59A1-5186-7E0042A304BB}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
@@ -76,6 +76,7 @@
      <None Include="Assets\SUIMONO - WATER SYSTEM 2\SHADERS\Suimono2_water_basic_dx11.shader" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\MotionBlur.shader" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\MobileBloom.shader" />
+     <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend (Queue +100).shader" />
      <None Include="Assets\Destroyed_city\Shaders\zz.shader" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\GlowCompose.shader" />
      <None Include="Assets\SUIMONO - WATER SYSTEM 2\SHADERS\Suimono2_waterscale_basic.shader" />
@@ -190,9 +191,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-firstpass-vs.csproj">
-      <Project>{426B0552-916F-D537-53DB-3CC1CE2A4C10}</Project>      <Name>Assembly-CSharp-firstpass-vs</Name>    </ProjectReference>
+      <Project>{5E558EEA-0EBE-1594-7249-2C1382A21192}</Project>      <Name>Assembly-CSharp-firstpass-vs</Name>    </ProjectReference>
     <ProjectReference Include="Assembly-CSharp-vs.csproj">
-      <Project>{64184639-5DB2-775D-6A1D-B19A0288C3AB}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
+      <Project>{531328CE-F36A-001C-CA82-869BB2FEF2F1}</Project>      <Name>Assembly-CSharp-vs</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
