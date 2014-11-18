@@ -63,7 +63,7 @@
      <Compile Include="Assets\SUIMONO - WATER SYSTEM 2\_DEMO_BETA\SCRIPTS\sui_demo_Controller2.js" />
      <Compile Include="Assets\SUIMONO - WATER SYSTEM 2\_DEMO_BETA\SCRIPTS\sui_demo_boathandler.js" />
      <Compile Include="Assets\SUIMONO - WATER SYSTEM 2\_DEMO_BETA\SCRIPTS\sui_demo_trigger.js" />
-     <Compile Include="Assets\test.js" />
+     <Compile Include="Assets\getHeight.js" />
      <None Include="Assets\SUIMONO - WATER SYSTEM 2\SHADERS\SuimonoFunctionsDX11.cginc" />
      <None Include="Assets\Standard Assets\Image Effects (Pro Only)\_Sources\Shaders\_BloomAndFlares\BlendOneOne.shader" />
      <None Include="Assets\SUIMONO - WATER SYSTEM 2\SHADERS\Suimono2_particleAlphaOverlay.shader" />

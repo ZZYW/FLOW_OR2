@@ -2,26 +2,20 @@
 using System.Collections;
 
 public class sinkTerrain : MonoBehaviour {
-	public bool isHit;
-	private GameObject temp;
-	int tempBreath;
-	
+	public bool sink;
+
 	void Start () {
-		isHit = false;
-		temp = GameObject.Find ("breathSensor");
-		tempBreath = 0;
+		sink = false;
+	
 	}
 	
 	void Update () {
-		if (temp.GetComponent<myReading>().deepBreathCounter > tempBreath) {
-			isHit=true;		
-			tempBreath = temp.GetComponent<myReading>().deepBreathCounter;
-		}
 
-		if(tempBreath > 10){
+
+		if (sink) {
 			Destroy(gameObject);
 		}
-
+	
 	}
 
 }

@@ -7,14 +7,17 @@ public class raiseWater : MonoBehaviour
 	int tempBreath;
 	public bool isRaise;
 	public float raiseAcc;
+	public float descentAcc;
 	public float timer;
 	public bool isDescent;
+
 
 	void Start ()
 	{
 		isDescent = false;
 		isRaise = false;
 		raiseAcc = 0.0f;
+		descentAcc = 0.0f;
 	}
 
 	void LateUpdate ()
@@ -31,7 +34,8 @@ public class raiseWater : MonoBehaviour
 
 		if(isDescent){
 			Vector3 pos = gameObject.transform.position;
-			pos.y = pos.y - 0.02f;
+			descentAcc += 0.01f;
+			pos.y = pos.y - descentAcc;
 			gameObject.transform.position = pos;
 		}
 

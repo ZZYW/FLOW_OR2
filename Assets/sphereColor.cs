@@ -4,27 +4,22 @@ using System.Collections;
 public class sphereColor : MonoBehaviour {
 	private float tempTrans;
 	private float startTime;
-	private GameObject temp;
 	private bool isFade;
 	public float tempDeepBreath = 0;
+	public bool startFadeout;
 
 
 	void Start () {
+		startFadeout = false;
 		startTime = 0.0f;
 		tempTrans = 0.0f;
-		temp = GameObject.Find("breathSensor");
 		isFade = false;
-
-
-		}
+	}
 	
 	// Update is called once per frame
 	void Update () {
-		//if (temp.GetComponent<myReading>().deepBreathCounter > 5 && isFade == false) {
 
-		tempDeepBreath = temp.GetComponent<myReading> ().deepBreathCounter;
-
-		if ( tempDeepBreath > 10 && isFade == false) {
+		if ( startFadeout && isFade == false) {
 			StartCoroutine(Fade());
 			isFade = true;
 		}

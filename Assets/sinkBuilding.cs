@@ -3,40 +3,29 @@ using System.Collections;
 
 public class sinkBuilding : MonoBehaviour {
 	public bool isHit;
-	public bool domeFade = false;
 	public bool buildingFade = false;
-	private GameObject temp;
-	private int tempBreath;
-//	public AudioClip buildingSink;
+	public bool startFadeOut = false;
+	private bool forloopStarted = false;
+
+	public GameObject suimono;
+
 	
 	void Start () {
 		isHit = false;
-		temp = GameObject.Find ("breathSensor");
-		tempBreath = 0;
+
+		forloopStarted = false;
 	}
 
 	void Update () {
 
-////////After each deep breath, all visible buildings fall
-//		if (temp.GetComponent<myReading>().deepBreathCounter > tempBreath) {
-//			if (gameObject.renderer.isVisible == true) {
-//				isHit=true;		
-//			}
-//			tempBreath = temp.GetComponent<myReading>().deepBreathCounter;
-//		}
 
-		tempBreath = temp.GetComponent<myReading> ().deepBreathCounter;
 
-		if (tempBreath > 10 && buildingFade == false) {
-			gameObject.renderer.material.shader = Shader.Find("Transparent/Diffuse");
-			buildingFade = true;
-		}
-	
-		//hmmmmmm, this is not dome fader right?...
-		if (tempBreath > 10 && domeFade==false) {
-
-			StartCoroutine(Fade());
-			domeFade=true;
+		if(startFadeOut){
+			if(!forloopStarted){
+				gameObject.renderer.material.shader = Shader.Find("Transparent/Diffuse");
+				StartCoroutine(Fade());
+				forloopStarted = true;
+			}
 		}
 
 
@@ -44,11 +33,6 @@ public class sinkBuilding : MonoBehaviour {
 			Vector3 pos = gameObject.transform.position;
 			pos.y = pos.y - 0.1f;
 			gameObject.transform.position = pos;
-//			audio.PlayOneShot(buildingSink);
-
-//			if(pos.y <= -50.0f){
-//				Destroy(gameObject);
-//			}
 		}
 	}
 
