@@ -6,11 +6,12 @@ Properties {
 }
 
 Category {
-	Tags { "Queue"="Overlay+15" "IgnoreProjector"="True"}
+	Tags { "Queue"="Overlay" "IgnoreProjector"="True"} //overlay
 	Blend SrcAlpha OneMinusSrcAlpha
 	//AlphaTest Greater .01
 	//ColorMask RGB
-	Cull Back Lighting Off ZWrite Off Fog{Mode Off}
+	Cull Off Lighting Off ZWrite Off Fog{Mode Off}
+
 	BindChannels {
 		Bind "Color", color
 		Bind "Vertex", vertex

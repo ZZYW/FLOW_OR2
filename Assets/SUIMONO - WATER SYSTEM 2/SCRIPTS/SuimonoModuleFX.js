@@ -53,8 +53,8 @@ function Start () {
 	}
 	}
 	
-	//do clamp checks at 30fps
-	var clampSpeed = 1.0/30.0;
+	//do clamp checks at 6fps
+	var clampSpeed = 1.0/4.0;
 	InvokeRepeating("ClampSystems",1.0,clampSpeed);
 	
 }
@@ -117,16 +117,17 @@ function ClampSystems(){
 			var currPXWaterPos : float = 0.0;
 			
 			//get particles
-			var setParticles = new ParticleSystem.Particle[fxObjects[fx].particleSystem.particleCount];
-			fxObjects[fx].particleSystem.GetParticles(setParticles);
+			var useParticleComponent : ParticleSystem = fxObjects[fx].GetComponent(ParticleSystem);
+			var setParticles = new ParticleSystem.Particle[useParticleComponent.particleCount];
+			useParticleComponent.GetParticles(setParticles);
 			//set particles
-			if (fxObjects[fx].particleSystem.particleCount > 0.0){
-			for (var px : int = 0; px < fxObjects[fx].particleSystem.particleCount; px++){
+			if (useParticleComponent.particleCount > 0.0){
+			for (var px : int = 0; px < useParticleComponent.particleCount; px++){
 				//Clamp to Surface
 				//if (systemClampType[fx] == Sui_FX_ClampType.atSurface){
 				if (clampIndex[fx] == 1){
 					currPXWaterPos = moduleObject.SuimonoGetHeight(setParticles[px].position,"surfaceLevel");
-					setParticles[px].position.y = currPXWaterPos;
+					setParticles[px].position.y = currPXWaterPos+0.2;
 				}
 				//Clamp Under Water
 				//if (systemClampType[fx] == Sui_FX_ClampType.belowSurface){
@@ -141,8 +142,8 @@ function ClampSystems(){
 					if (setParticles[px].position.y < currPXWaterPos+0.2) setParticles[px].position.y = currPXWaterPos+0.2;
 				}
 			}
-			fxObjects[fx].particleSystem.SetParticles(setParticles,setParticles.length);
-			fxObjects[fx].particleSystem.Play();
+			useParticleComponent.SetParticles(setParticles,setParticles.length);
+			useParticleComponent.Play();
 
 			
 			}
@@ -187,7 +188,7 @@ function AddSystem(){
 function AddParticle( particleData : ParticleSystem.Particle){
 
 	particleReserve.Add(particleData);
-	//fxObjects[Mathf.Floor(particleData.angularVelocity)].particleSystem.Emit(1);
+	//fxObjects[Mathf.Floor(particleData.angularVelocity)].GetComponent(ParticleSystem).Emit(1);
 	
 }
 
@@ -200,7 +201,7 @@ function updateFX(){
 	for (var efx : int = 0; efx < effectsSystems.length; efx++){
 		for (var epx : int = 0; epx < particleReserve.Count; epx++){
 			if (Mathf.Floor(particleReserve[epx].angularVelocity) == efx){
-				fxObjects[efx].particleSystem.Emit(1);
+				fxObjects[efx].GetComponent(ParticleSystem).Emit(1);
 			}
 		}				
 	}
@@ -216,14 +217,15 @@ function updateFX(){
 		for (var px : int = 0; px < particleReserve.Count; px++){
 			if (Mathf.Floor(particleReserve[px].angularVelocity) == fx){
 			
-				//fxObjects[fx].particleSystem.Emit(1);
+				//fxObjects[fx].GetComponent(ParticleSystem).Emit(1);
 				
 				//get particles
-				var setParticles = new ParticleSystem.Particle[fxObjects[fx].particleSystem.particleCount];
-				fxObjects[fx].particleSystem.GetParticles(setParticles);
+				var useParticleComponent : ParticleSystem = fxObjects[fx].GetComponent(ParticleSystem);
+				var setParticles = new ParticleSystem.Particle[useParticleComponent.particleCount];
+				useParticleComponent.GetParticles(setParticles);
 				//set particles
-				//if (fxObjects[fx].particleSystem.particleCount > 0.0){
-				for (var sx : int = (fxObjects[fx].particleSystem.particleCount-1); sx < fxObjects[fx].particleSystem.particleCount; sx++){
+				//if (useParticleComponent.particleCount > 0.0){
+				for (var sx : int = (useParticleComponent.particleCount-1); sx < useParticleComponent.particleCount; sx++){
 					//set position
 					setParticles[px].position = particleReserve[px].position;
 					//set variables
@@ -233,8 +235,8 @@ function updateFX(){
 					//setParticles[px].color *= particleReserve[px].color;	
 				}
 
-				fxObjects[fx].particleSystem.SetParticles(setParticles,setParticles.length);
-				//fxObjects[fx].particleSystem.Play();
+				useParticleComponent.SetParticles(setParticles,setParticles.length);
+				//useParticleComponent.Play();
 			}
 		}						
 	}

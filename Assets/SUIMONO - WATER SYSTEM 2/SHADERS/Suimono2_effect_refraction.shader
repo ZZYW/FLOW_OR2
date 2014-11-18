@@ -21,20 +21,19 @@ SubShader {
 
 GrabPass {
 	"_waterTex1"
-	Tags {"Queue" = "Overlay+19" "IgnoreProjector"="True"}
+	Tags {"Queue" = "Overlay+122" "IgnoreProjector"="True"}
 	Name "ScreenGrab"
 }
 
 
 //RENDER REFRACTION
 Pass{
-	Tags {"Queue"= "Overlay+20" "IgnoreProjector"="True"} //Geometry
-	Cull off
+	Tags {"Queue"= "Overlay+122" "IgnoreProjector"="True"} //Geometry
+	Cull Back
 	Name "DropDistortion"
 	Blend SrcAlpha OneMinusSrcAlpha
-	//ColorMask RGBA
 	ZWrite Off
-	//ZTest Always
+	ZTest Always
 	
 	CGPROGRAM
 	#pragma vertex vert
@@ -136,10 +135,11 @@ Pass{
 		oCol *= lerp(0.75,1.0,MTex.g);
 		
 		oCol.a = MTex.r * i.color.a * _DepthColor.a;// * 1.65;//(MTex.r*1.5);
-		
+
 		if (colMask >= 0.999)
 			oCol.a * 0.05;
 		
+		//clip(oCol.a-0.25);
 		return oCol*(_Brightness);
 	}
 

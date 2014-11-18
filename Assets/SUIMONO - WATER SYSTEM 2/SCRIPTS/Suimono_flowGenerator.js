@@ -18,6 +18,7 @@ private var autoTimer : float = 0.0;
 //private var waveObject : Suimono_waveGenerator;
 
 private var renderObject : GameObject;
+private var rendererComponent : Renderer;
 
 function Start () {
 	
@@ -26,6 +27,7 @@ function Start () {
 	if (renderObject.gameObject.GetComponent(MeshFilter)){
 		parentMesh = renderObject.gameObject.GetComponent(MeshFilter).sharedMesh;
 	}
+	rendererComponent = renderObject.GetComponent(Renderer);
 	
 	//waveObject = transform.parent.gameObject.Find("Suimono_waveObject").gameObject.GetComponent(Suimono_waveGenerator);
 
@@ -161,10 +163,10 @@ function Generate2(){
 		shoreMapTex.Apply(false,false);
 		
 		//set texture to renderer position
-		if (renderObject.renderer){
+		if (rendererComponent){
 			shoreMapTex.wrapMode = TextureWrapMode.Clamp;
-			renderObject.renderer.sharedMaterial.SetTexture("_FlowMap",shoreMapTex);
-			renderObject.renderer.sharedMaterial.SetTextureScale("_FlowMap",Vector2(1.0,1.0));
+			rendererComponent.sharedMaterial.SetTexture("_FlowMap",shoreMapTex);
+			rendererComponent.sharedMaterial.SetTextureScale("_FlowMap",Vector2(1.0,1.0));
 			//if (waveObject != null) waveObject.maskMapTex = shoreMapTex;
 		}
 	}
@@ -277,10 +279,10 @@ function Generate(){
 		//
 		
 		//set texture to renderer position
-		if (renderObject.renderer){
+		if (rendererComponent){
 			shoreMapTex.wrapMode = TextureWrapMode.Clamp;
-			renderObject.renderer.sharedMaterial.SetTexture("_FlowMap",shoreMapTex);
-			renderObject.renderer.sharedMaterial.SetTextureScale("_FlowMap",Vector2(1.0,1.0));
+			rendererComponent.sharedMaterial.SetTexture("_FlowMap",shoreMapTex);
+			rendererComponent.sharedMaterial.SetTextureScale("_FlowMap",Vector2(1.0,1.0));
 			//if (waveObject != null) waveObject.maskMapTex = shoreMapTex;
 		}
 	}

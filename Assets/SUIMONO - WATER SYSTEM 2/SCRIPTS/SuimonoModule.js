@@ -20,13 +20,13 @@ var enableUnderwaterFX : boolean = true;
 var enableUnderwaterDeferred : boolean = true;
 var enableInteraction : boolean = true;
 
+var enableRefraction : boolean = true;
 var enableDynamicReflections : boolean = true;
 var showPerformance : boolean = false;
 var showGeneral : boolean = false;
 
 var etherealScroll : float = 0.1; 
 
-var enableRefraction : boolean = true;
 var enableBlur : boolean = true;
 var underwaterColor : Color = Color(0.58,0.61,0.61,0.0);
 var enableTransition : boolean = true;
@@ -53,6 +53,7 @@ private var waterTransitionPlane : GameObject;
 private var waterTransitionPlane2 : GameObject;
 private var underwaterDebris : ParticleSystem;
 
+private var underLightAmt : float = 0.0;
 private var underFogDist : float = 0.0;
 private var underFogSpread : float = 0.0;
 private var reflectColor : Color;
@@ -134,6 +135,16 @@ private var planeIsSet : boolean = false;
 var suimonoModuleLibrary : SuimonoModuleLib;
 
 
+private var waterTransitionRendererComponent : Renderer;
+private var waterTransitionParticleComponent : ParticleSystem;
+private var waterTransitionParticleRenderComponent : Renderer;
+private var waterTransition2RendererComponent : Renderer;
+private var waterTransition2ParticleComponent : ParticleSystem;
+private var waterTransition2ParticleRenderComponent : Renderer;
+private var underwaterDebrisRendererComponent : Renderer;
+private var underwaterRefractRendererComponent : Renderer;
+private var setCameraComponent : Camera;
+
 
 
 function Start(){
@@ -198,26 +209,36 @@ function Start(){
 	#endif
 	//
 	
+
 	
 	//set camera
 	if (setCamera == null){
 		if (Camera.main != null){
 			setCamera = Camera.main.transform;
-			//camRendering = setCamera.camera.renderingPath;
-		} else {
-			Debug.Log("SUIMONO Error: no camera has been defined!  Suimono requires a camera to either be explicitly set in the Suimono_Module object, OR to be tagged with the 'MainCamera' GameObject tag."); 
+			//setCameraComponent = Camera.main.GetComponent(Camera);
+			//camRendering = setCameraComponent.renderingPath;
+		//} else {
+			//Debug.Log("SUIMONO Error: no camera has been defined!  Suimono requires a camera to either be explicitly set in the Suimono_Module object, OR to be tagged with the 'MainCamera' GameObject tag."); 
 		}
 	} else {
-		setCamera.camera.depthTextureMode = DepthTextureMode.Depth;
-		//camRendering = setCamera.camera.renderingPath;
+		//setCameraComponent.depthTextureMode = DepthTextureMode.DepthNormals;
+		//camRendering = setCameraComponent.renderingPath;
 	}
 	
 	//set track object
-	if (setTrack == null){
+	if (setTrack == null && setCamera != null){
 		setTrack = setCamera.transform;
 	}
 
-
+	//store component references
+	waterTransitionRendererComponent = waterTransitionPlane.GetComponent(Renderer);
+	waterTransitionParticleComponent = waterTransitionPlane.GetComponent(ParticleSystem);
+	waterTransitionParticleRenderComponent = waterTransitionPlane.GetComponent(ParticleSystem).GetComponent(Renderer);
+	waterTransition2RendererComponent = waterTransitionPlane2.GetComponent(Renderer);
+	waterTransition2ParticleComponent = waterTransitionPlane2.GetComponent(ParticleSystem);
+	waterTransition2ParticleRenderComponent = waterTransitionPlane2.GetComponent(ParticleSystem).GetComponent(Renderer);
+	underwaterDebrisRendererComponent = underwaterDebris.GetComponent(Renderer);
+	underwaterRefractRendererComponent = underwaterRefractPlane.GetComponent(Renderer);
 
 	InvokeRepeating("StoreSurfaceHeight",0.1,0.1);
 
@@ -228,10 +249,11 @@ function Start(){
 
 function FixedUpdate () {
 		
+		
 		//UNITY BASIC VERSION SPECIFIC
 		if (unityVersionIndex == 0){//unity basic version
-			shaderSurface = Shader.Find("Suimono2/water_basic2");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_basic");
+			//shaderSurface = Shader.Find("Suimono2/water_basic2");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_basic");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_basic");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction_mobile");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");
@@ -239,8 +261,8 @@ function FixedUpdate () {
 		
 		//UNITY BASIC DX11 VERSION SPECIFIC
 		if (unityVersionIndex == 1){//unity basic dx11 version
-			shaderSurface = Shader.Find("Suimono2/water_basic_dx11");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_basic_dx11");
+			//shaderSurface = Shader.Find("Suimono2/water_basic_dx11");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_basic_dx11");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_basic");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction_mobile");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");
@@ -248,8 +270,8 @@ function FixedUpdate () {
 				
 		//UNITY iOS VERSION SPECIFIC
 		else if (unityVersionIndex == 4){//mobile
-			shaderSurface = Shader.Find("Suimono2/water_ios");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_ios");
+			//shaderSurface = Shader.Find("Suimono2/water_ios");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_ios");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_basic");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction_mobile");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");	
@@ -257,8 +279,8 @@ function FixedUpdate () {
 		
 		//UNITY ANDROID VERSION SPECIFIC
 		else if (unityVersionIndex == 5){//android
-			shaderSurface = Shader.Find("Suimono2/water_android");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_android");
+			//shaderSurface = Shader.Find("Suimono2/water_android");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_android");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_basic");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction_mobile");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");	
@@ -267,8 +289,8 @@ function FixedUpdate () {
 		//UNITY PRO DX11 VERSION SPECIFIC
 		#if !UNITY_STANDALONE_OSX
 		else if (unityVersionIndex == 3){//dx11
-			shaderSurface = Shader.Find("Suimono2/water_pro_dx11");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_pro_dx11");
+			//shaderSurface = Shader.Find("Suimono2/water_pro_dx11");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_pro_dx11");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_dx11");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");
@@ -277,14 +299,15 @@ function FixedUpdate () {
 		
 		//UNITY PRO VERSION SPECIFIC
 		else if (unityVersionIndex == 2){//pro
-			shaderSurface = Shader.Find("Suimono2/water_pro");
-			shaderUnderwater = Shader.Find("Suimono2/water_under_pro");
+			//shaderSurface = Shader.Find("Suimono2/water_pro");
+			//shaderUnderwater = Shader.Find("Suimono2/water_under_pro");
 			shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane");
+			if (!enableRefraction) shaderUnderwaterFX = Shader.Find("Suimono2/effect_refractPlane_norefract");
 			shaderDropletsFX = Shader.Find("Suimono2/effect_refraction");
 			debrisShaderFX = Shader.Find("Suimono2/particle_Alpha_4");
-			if (setCamera.camera.actualRenderingPath == RenderingPath.Forward){
-				shaderUnderwater = Shader.Find("Suimono2/water_under_pro_fwd");
-			}
+			//if (setCamera.GetComponent(Camera).actualRenderingPath == RenderingPath.Forward){
+			//	shaderUnderwater = Shader.Find("Suimono2/water_under_pro_fwd");
+			//}
 		}
 		
 		//suimonoModuleLibrary.shader3 = shaderUnderwaterFX;
@@ -304,17 +327,16 @@ function FixedUpdate () {
 	if (setCamera == null){
 		if (Camera.main != null){
 			setCamera = Camera.main.transform;
-			//camRendering = setCamera.camera.renderingPath;
-		} else {
-			Debug.Log("SUIMONO Error: no camera has been defined!  Suimono requires a camera to either be explicitly set in the Suimono_Module object, OR to be tagged with the 'MainCamera' GameObject tag."); 
+			//setCameraComponent = Camera.main.GetComponent(Camera);
+		//} else {
+			//Debug.Log("SUIMONO Error: no camera has been defined!  Suimono requires a camera to either be explicitly set in the Suimono_Module object, OR to be tagged with the 'MainCamera' GameObject tag."); 
 		}
 	} else {
-		setCamera.camera.depthTextureMode = DepthTextureMode.Depth;
-		//camRendering = setCamera.camera.renderingPath;
+		setCamera.GetComponent(Camera).depthTextureMode = DepthTextureMode.Depth;
 	}
 	
 	//set track object
-	if (setTrack == null){
+	if (setTrack == null && setCamera != null){
 		setTrack = setCamera.transform;
 	}
 
@@ -334,12 +356,12 @@ function FixedUpdate () {
 
 
 function StoreSurfaceHeight(){
-
-	SuimonoGetHeight(setCamera.transform.position,"store variables");
-
-	checkUnderwaterEffects();
-	checkWaterTransition();
 	
+	if (setCamera != null){
+		SuimonoGetHeight(setCamera.transform.position,"store variables");
+		checkUnderwaterEffects();
+		checkWaterTransition();
+	}
 }
 
 
@@ -390,22 +412,22 @@ function AddFX(fxSystem : int, effectPos : Vector3, addRate : int, addSize : flo
 		//if (addMode == "rings"){
 			if (fxObject.fxObjects[fx] != null){
 
-			//fxObject.fxObjects[px].particleSystem.renderer.sharedMaterial.shader = shaderDropletsFX;
+			//fxObject.fxObjects[px].GetComponent(ParticleSystem).GetComponent(Renderer).sharedMaterial.shader = shaderDropletsFX;
 			
 			
 			//#if !UNITY_3_5
 				//In Unity 4.0+ We can simply emit the particle with specific parameters
-				//fxObject.fxObjects[fx].particleSystem.Emit(effectPos,addVeloc,addSize,10.0,addCol);
+				//fxObject.fxObjects[fx].GetComponent(ParticleSystem).Emit(effectPos,addVeloc,addSize,10.0,addCol);
 				
 			//#else
 				//In Unity 3.5 we have to run through this stupid whol-system reset just to define emitted particles!
-				fxObject.fxObjects[fx].particleSystem.Emit(addRate);
+				fxObject.fxObjects[fx].GetComponent(ParticleSystem).Emit(addRate);
 				//get particles
-				var setParticles = new ParticleSystem.Particle[fxObject.fxObjects[fx].particleSystem.particleCount];
-				fxObject.fxObjects[fx].particleSystem.GetParticles(setParticles);
+				var setParticles = new ParticleSystem.Particle[fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount];
+				fxObject.fxObjects[fx].GetComponent(ParticleSystem).GetParticles(setParticles);
 				//set particles
-				if (fxObject.fxObjects[fx].particleSystem.particleCount > 0.0){
-				for (var px : int = (fxObject.fxObjects[fx].particleSystem.particleCount-addRate); px < fxObject.fxObjects[fx].particleSystem.particleCount; px++){
+				if (fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount > 0.0){
+				for (var px : int = (fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount-addRate); px < fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount; px++){
 						
 						//set position
 						setParticles[px].position.x = effectPos.x;
@@ -425,8 +447,8 @@ function AddFX(fxSystem : int, effectPos : Vector3, addRate : int, addSize : flo
 						setParticles[px].color *= addCol;
 						
 				}
-				fxObject.fxObjects[fx].particleSystem.SetParticles(setParticles,setParticles.length);
-				fxObject.fxObjects[fx].particleSystem.Play();
+				fxObject.fxObjects[fx].GetComponent(ParticleSystem).SetParticles(setParticles,setParticles.length);
+				fxObject.fxObjects[fx].GetComponent(ParticleSystem).Play();
 				}
 			//#endif
 			
@@ -447,15 +469,15 @@ function AddFX(fxSystem : int, effectPos : Vector3, addRate : int, addSize : flo
 		//if (addMode == "rings"){
 			if (fxObject.fxObjects[fx] != null){
 
-			//fxObject.fxObjects[px].particleSystem.renderer.sharedMaterial.shader = shaderDropletsFX;
-			fxObject.fxObjects[fx].particleSystem.Emit(addRate);
+			//fxObject.fxObjects[px].GetComponent(ParticleSystem).GetComponent(Renderer).sharedMaterial.shader = shaderDropletsFX;
+			fxObject.fxObjects[fx].GetComponent(ParticleSystem).Emit(addRate);
 
 			//get particles
-			var setParticles = new ParticleSystem.Particle[fxObject.fxObjects[fx].particleSystem.particleCount];
-			fxObject.fxObjects[fx].particleSystem.GetParticles(setParticles);
+			var setParticles = new ParticleSystem.Particle[fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount];
+			fxObject.fxObjects[fx].GetComponent(ParticleSystem).GetParticles(setParticles);
 			//set particles
-			if (fxObject.fxObjects[fx].particleSystem.particleCount > 0.0){
-			for (var px : int = (fxObject.fxObjects[fx].particleSystem.particleCount-addRate); px < fxObject.fxObjects[fx].particleSystem.particleCount; px++){
+			if (fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount > 0.0){
+			for (var px : int = (fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount-addRate); px < fxObject.fxObjects[fx].GetComponent(ParticleSystem).particleCount; px++){
 					
 					//set position
 					setParticles[px].position.x = effectPos.x;
@@ -475,8 +497,8 @@ function AddFX(fxSystem : int, effectPos : Vector3, addRate : int, addSize : flo
 					setParticles[px].color *= addCol;
 					
 			}
-			fxObject.fxObjects[fx].particleSystem.SetParticles(setParticles,setParticles.length);
-			//fxObject.fxObjects[fx].particleSystem.Play();
+			fxObject.fxObjects[fx].GetComponent(ParticleSystem).SetParticles(setParticles,setParticles.length);
+			//fxObject.fxObjects[fx].GetComponent(ParticleSystem).Play();
 			}
 		}
 		//}
@@ -499,7 +521,7 @@ if (enableInteraction){
 	if (addMode == "rings"){
 		if (ringsSystem != null){
 
-		ringsSystem.renderer.sharedMaterial.shader = shaderDropletsFX;
+		ringsSystem.GetComponent(Renderer).sharedMaterial.shader = shaderDropletsFX;
 		ringsSystem.Emit(addRate);
 		//get particles
 		ringsParticles = new ParticleSystem.Particle[ringsSystem.particleCount];
@@ -755,15 +777,14 @@ function checkUnderwaterEffects(){
 		
 	//set blur
 	if (enableBlur){
-		underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_BlurSpread",blurAmount);
-		//underwaterRefractPlane.renderer.sharedMaterial.SetInt("_blurSamples",blurSamples);
-		underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_blurSamples",blurSamples);
+		underwaterRefractRendererComponent.sharedMaterial.SetFloat("_BlurSpread",blurAmount);
+		//underwaterRefractRendererComponent.sharedMaterial.SetInt("_blurSamples",blurSamples);
+		underwaterRefractRendererComponent.sharedMaterial.SetFloat("_blurSamples",blurSamples);
 	} else {
-		underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_BlurSpread",0.0);
-		//underwaterRefractPlane.renderer.sharedMaterial.SetInt("_blurSamples",blurSamples);
-		underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_blurSamples",blurSamples);
+		underwaterRefractRendererComponent.sharedMaterial.SetFloat("_BlurSpread",0.0);
+		//underwaterRefractRendererComponent.sharedMaterial.SetInt("_blurSamples",blurSamples);
+		underwaterRefractRendererComponent.sharedMaterial.SetFloat("_blurSamples",blurSamples);
 	}
-
 
 
 	
@@ -773,27 +794,26 @@ function checkUnderwaterEffects(){
 		
 			//swap camera rendering to deferred for best underwater rendering!
 			//note: this can be disabled in the module settings.
-			//if (enableUnderwaterDeferred) setCamera.camera.renderingPath = RenderingPath.DeferredLighting;
+			//if (enableUnderwaterDeferred) setCamera.GetComponent(Camera).renderingPath = RenderingPath.DeferredLighting;
 		
 			//reposition refract plane
-			//underwaterRefractPlane.renderer.sharedMaterial.SetInt("_blurSamples",blurSamples);
-			underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_blurSamples",blurSamples);
-			underwaterRefractPlane.renderer.sharedMaterial.shader = shaderUnderwaterFX;
+			//underwaterRefractRendererComponent.sharedMaterial.SetInt("_blurSamples",blurSamples);
+			underwaterRefractRendererComponent.sharedMaterial.SetFloat("_blurSamples",blurSamples);
+			underwaterRefractRendererComponent.sharedMaterial.shader = shaderUnderwaterFX;
 			underwaterRefractPlane.transform.parent = setCamera.transform;
 			underwaterRefractPlane.transform.localScale = Vector3(0.4,1.0,0.3);
-			underwaterRefractPlane.transform.localPosition = Vector3(0.0,0.0,(setCamera.camera.nearClipPlane+(cameraPlane_offset)+0.05));
+			underwaterRefractPlane.transform.localPosition = Vector3(0.0,0.0,(setCamera.GetComponent(Camera).nearClipPlane+(cameraPlane_offset)+0.05));
 			underwaterRefractPlane.transform.localEulerAngles = Vector3(270.0,0.0,0.0);
-	   		underwaterRefractPlane.renderer.enabled = true;
-	   		
-	   		//Debug.Log("underwater");
+	   		underwaterRefractRendererComponent.enabled = true;
+
 
 		}
 		
 	} else {
 		
 		//swap camera rendering to back to default
-		//setCamera.camera.renderingPath = camRendering;
-   		underwaterRefractPlane.renderer.enabled = false;
+		//setCamera.GetComponent(Camera).renderingPath = camRendering;
+   		underwaterRefractRendererComponent.enabled = false;
 
 	}
 	
@@ -828,66 +848,71 @@ function checkWaterTransition () {
 			doWaterTransition = true;
 			
 	       	//set underwater debris
-	       	if (suimonoObject != null){
-		       	if (suimonoObject.enableUnderDebris){
+	       	if (suimonoObject != null && setCamera != null){
+		       	if (suimonoObject.enableUnderDebris && setCamera != null){
 
-		       		underwaterDebris.renderer.sharedMaterial.shader = debrisShaderFX;
+		       		underwaterDebrisRendererComponent.sharedMaterial.shader = debrisShaderFX;
 			       	underwaterDebris.transform.position = setCamera.transform.position;
 			       	underwaterDebris.transform.rotation = setCamera.transform.rotation;
 			       	underwaterDebris.transform.Translate(Vector3.forward * 40.0);
-					underwaterDebris.renderer.enabled=true;
+					underwaterDebrisRendererComponent.enabled=true;
 					underwaterDebris.enableEmission=true;
 					underwaterDebris.Play();
 				}
-				
+			
 				//get attributes from surface
 				underwaterColor = suimonoObject.underwaterColor;
 				refractionAmount = suimonoObject.underRefractionAmount;
 		       	blurAmount = suimonoObject.underBlurAmount;
 		       	underFogSpread = suimonoObject.underwaterFogSpread;
 		       	underFogDist = suimonoObject.underwaterFogDist;
+		       	
+		       	underLightAmt = suimonoObject.reflectDistUnderAmt;
 		       	refractAmt = suimonoObject.underRefractionAmount;
 		       	refractSpd = suimonoObject.underRefractionSpeed*10;
 		       	refractScl = suimonoObject.underRefractionScale;
 
 	       	
 		       	//set attributes to shader
-		       	//underwaterRefractPlane.renderer.sharedMaterial.SetInt("_blurSamples",blurSamples);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_blurSamples",blurSamples);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_RefrStrength",refractAmt);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_RefrSpeed",refractSpd);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_AnimSpeed",refractSpd);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_MasterScale",refractScl);
+		       	var useRefract : float = 1.0;
+		       	if (!enableRefraction) useRefract = 0.0;
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_UnderReflDist",underLightAmt);
+		       	//underwaterRefractRendererComponent.sharedMaterial.SetInt("_blurSamples",blurSamples);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_blurSamples",blurSamples);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_RefrStrength",refractAmt*useRefract);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_RefrSpeed",refractSpd*useRefract);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_AnimSpeed",refractSpd);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_MasterScale",refractScl);
 		       	
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_underFogStart",underFogDist);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_underFogStretch",underFogSpread);
-		       	underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_BlurSpread",blurAmount);
-				underwaterRefractPlane.renderer.sharedMaterial.SetColor("_DepthColorB",underwaterColor);
-				//underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_DepthAmt",0.001+(hitAmt*0.2));
-				underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_DepthAmt",0.001);
-				underwaterRefractPlane.renderer.sharedMaterial.SetFloat("_Strength",refractionAmount);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_underFogStart",underFogDist);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_underFogStretch",underFogSpread);
+		       	underwaterRefractRendererComponent.sharedMaterial.SetFloat("_BlurSpread",blurAmount*useRefract);
+				underwaterRefractRendererComponent.sharedMaterial.SetColor("_DepthColorB",underwaterColor);
+				//underwaterRefractRendererComponent.sharedMaterial.SetFloat("_DepthAmt",0.001+(hitAmt*0.2));
+				underwaterRefractRendererComponent.sharedMaterial.SetFloat("_DepthAmt",0.001);
+				underwaterRefractRendererComponent.sharedMaterial.SetFloat("_Strength",refractionAmount);
 				underwaterRefractPlane.transform.parent = setCamera.transform;
-				//underwaterRefractPlane.transform.localPosition = Vector3(0.0,0.0,(setCamera.camera.nearClipPlane+0.02));
+				//underwaterRefractPlane.transform.localPosition = Vector3(0.0,0.0,(setCamera.GetComponent(Camera).nearClipPlane+0.02));
 				underwaterRefractPlane.transform.localEulerAngles = Vector3(270.0,0.0,0.0);
-			    underwaterRefractPlane.renderer.enabled = true;
+			    underwaterRefractRendererComponent.enabled = true;
 	  
 	       	} else {
-	       		underwaterRefractPlane.renderer.enabled = false;
+	       		underwaterRefractRendererComponent.enabled = false;
 	       	}
 	       	
 	       	
 	       	//hide water transition
 	       	waterTransitionPlane.transform.parent = this.transform;
-	     	waterTransitionPlane.GetComponent(ParticleSystem).renderer.enabled = false;
-	     	waterTransitionPlane.GetComponent(ParticleSystem).Clear();
+	     	waterTransitionParticleRenderComponent.enabled = false;
+	     	waterTransitionParticleComponent.Clear();
 	     	
 	     	waterTransitionPlane2.transform.parent = this.transform;
-			waterTransitionPlane2.GetComponent(ParticleSystem).renderer.enabled = false;
-	        waterTransitionPlane2.GetComponent(ParticleSystem).Clear();
+			waterTransition2ParticleRenderComponent.enabled = false;
+	        waterTransition2ParticleComponent.Clear();
 
 	       	//if (targetSurface){
-	       		//if (targetSurface.renderer.sharedMaterial.shader != shaderUnderwater){
-				//	targetSurface.renderer.sharedMaterial.shader = shaderUnderwater;
+	       		//if (targetSurface.GetComponent(Renderer).sharedMaterial.shader != shaderUnderwater){
+				//	targetSurface.GetComponent(Renderer).sharedMaterial.shader = shaderUnderwater;
 				//}
 			//}
 
@@ -896,38 +921,39 @@ function checkWaterTransition () {
 
 	        //reset underwater debris
 	        underwaterDebris.transform.parent = this.transform;
-	       	underwaterDebris.renderer.enabled=false;
+	       	underwaterDebrisRendererComponent.enabled=false;
 
 	       	//turn off water refraction plane
 	       	underwaterRefractPlane.transform.parent = this.transform;
-	     	underwaterRefractPlane.renderer.enabled = false;
-	     
+	     	underwaterRefractRendererComponent.enabled = false;
+	
 
 	     	//show water transition
 	     	if (enableTransition){
-	     	if (doWaterTransition){
+	     	if (doWaterTransition && setCamera != null){
 	     		
 	     		doTransitionTimer = 0.0;
 	     		//sets and emits random water "screen" droplets
 
-	     		waterTransitionPlane.renderer.sharedMaterial.shader = shaderDropletsFX;
-	     		waterTransitionPlane.GetComponent(ParticleSystem).renderer.enabled = true;
+	     		waterTransitionRendererComponent.sharedMaterial.shader = shaderDropletsFX;
+	     		waterTransitionParticleRenderComponent.enabled = true;
 	     		waterTransitionPlane.transform.parent = setCamera.transform;
 	     		//cameraPlane_offset = 3.7;
-	       		waterTransitionPlane.transform.localPosition = Vector3(0.0,0.0,setCamera.camera.nearClipPlane+cameraPlane_offset+0.02);
+	       		waterTransitionPlane.transform.localPosition = Vector3(0.0,0.0,setCamera.GetComponent(Camera).nearClipPlane+cameraPlane_offset+0.02);
 	       		waterTransitionPlane.transform.localEulerAngles = Vector3(270.0,262.9,0.0);
-	      		waterTransitionPlane.GetComponent(ParticleSystem).Play();
-	      		waterTransitionPlane.GetComponent(ParticleSystem).Emit(Random.Range(60,120));
+	      		waterTransitionParticleComponent.Play();
+	      		waterTransitionParticleComponent.Emit(Random.Range(60,120));
 	      		
 	      		//sets and plays water transition "screen" effect
 
-	      		waterTransitionPlane2.renderer.sharedMaterial.shader = shaderDropletsFX;
-	      		waterTransitionPlane2.GetComponent(ParticleSystem).renderer.enabled = true;
+	      		waterTransition2RendererComponent.sharedMaterial.shader = shaderDropletsFX;
+	      		waterTransition2ParticleRenderComponent.enabled = true;
 	     		waterTransitionPlane2.transform.parent = setCamera.transform;
-	       		waterTransitionPlane2.transform.localPosition = Vector3(0.0,0.0,setCamera.camera.nearClipPlane+cameraPlane_offset+0.01);
+	       		waterTransitionPlane2.transform.localPosition = Vector3(0.0,0.0,setCamera.GetComponent(Camera).nearClipPlane+cameraPlane_offset+0.01);
 	       		waterTransitionPlane2.transform.localEulerAngles = Vector3(270.0,262.9,0.0);
-	      		waterTransitionPlane2.GetComponent(ParticleSystem).Emit(1);
+	      		waterTransition2ParticleComponent.Emit(1);
 	      		
+    		
 	      		
 	       		doWaterTransition = false;
 	       		
@@ -942,19 +968,19 @@ function checkWaterTransition () {
 	     	} else {
 	     		
 
-	     		waterTransitionPlane.renderer.sharedMaterial.shader = shaderDropletsFX;
-	     		waterTransitionPlane.GetComponent(ParticleSystem).renderer.enabled = true;
-	     		waterTransitionPlane.GetComponent(ParticleSystem).Stop();
+	     		waterTransitionRendererComponent.sharedMaterial.shader = shaderDropletsFX;
+	     		waterTransitionParticleRenderComponent.enabled = true;
+	     		waterTransitionParticleComponent.Stop();
 	     		
-
-	     		waterTransitionPlane2.renderer.sharedMaterial.shader = shaderDropletsFX;
-	     		waterTransitionPlane2.GetComponent(ParticleSystem).renderer.enabled = true;
+  
+	     		waterTransition2RendererComponent.sharedMaterial.shader = shaderDropletsFX;
+	     		waterTransition2ParticleRenderComponent.enabled = true;
 	     		
 		     	//turn off water transitions plane
 		       	//waterTransitionPlane.transform.parent = this.transform;
-		     	//waterTransitionPlane.renderer.enabled = false;
+		     	//waterTransitionRendererComponent.enabled = false;
 		     	//waterTransitionPlane2.transform.parent = this.transform;
-		     	//waterTransitionPlane2.renderer.enabled = false;
+		     	//waterTransition2RendererComponent.enabled = false;
 	     		
 	     	}
 	       	}
@@ -967,8 +993,8 @@ function checkWaterTransition () {
     if (!enableUnderwaterFX){
     	//reset underwater FX and Shaders
     	underwaterRefractPlane.transform.parent = this.transform;
-   		underwaterRefractPlane.renderer.enabled = false;
-		underwaterDebris.renderer.enabled=false;
+   		underwaterRefractRendererComponent.enabled = false;
+		underwaterDebrisRendererComponent.enabled=false;
 
     }
 
@@ -1019,10 +1045,15 @@ function SuimonoGetHeight(testObject : Vector3, returnMode : String) : float {
 	
 	var getmap : Color = Color(0.0,0.0,0.0,0.0);
 	var getheight : float = -1.0;
+	var getheightW : float = -1.0;
+	var getheightD1 : float = -1.0;
+	var getheightD2 : float = -1.0;
 	var getheight1 : float = 0.0;
 	var getheight2 : float = 0.0;
+	var getheight3 : float = 0.0;
 	var isOverWater : boolean = false;
 	var surfaceLevel : float = -1.0;
+	var groundLevel : float = 0.0;
 	//var suimonoObject : SuimonoObject;
 	var layer : int = 4;
 	var layermask : int = 1 << layer;
@@ -1038,8 +1069,9 @@ function SuimonoGetHeight(testObject : Vector3, returnMode : String) : float {
 	//hits = Physics.RaycastAll(ray,500.0);
 	hits = (Physics.RaycastAll(testpos, -Vector3.up,10000));
 	for (var i = 0;i < hits.Length; i++) {
-		
+	//if (i == 0){
 		var hit : RaycastHit = hits[i];
+
 		if (hit.transform.gameObject.layer==4){ //hits object on water layer
 			
 		
@@ -1049,139 +1081,233 @@ function SuimonoGetHeight(testObject : Vector3, returnMode : String) : float {
 				isOverWater = true;
 				surfaceLevel = hit.point.y;
 				
+				
+					// default height to hit.point on flat water planes
+			   	if (suimonoObject != null){
+				if (suimonoObject.typeIndex != 2 && unityVersionIndex != 4 && unityVersionIndex != 5){
+
+			   	
+			   	
 				if (Application.isPlaying){
-				if (hit.collider.renderer.sharedMaterial.GetTexture("_Surface1") != null){
+				if (hit.collider.GetComponent(Renderer).sharedMaterial.GetTexture("_Surface1") != null){
 				
 					var pixelUV : Vector2 = hit.textureCoord;
 					var pixelUV2 : Vector2 = hit.textureCoord;
-					var checktex = hit.collider.renderer.sharedMaterial.GetTexture("_Surface1") as Texture2D;
-					var flowtex = hit.collider.renderer.sharedMaterial.GetTexture("_FlowMap") as Texture2D;
-					var wavetex = hit.collider.renderer.sharedMaterial.GetTexture("_WaveTex") as Texture2D;
+					var pixelUV3 : Vector2 = hit.textureCoord;
+					var checktex = hit.collider.GetComponent(Renderer).sharedMaterial.GetTexture("_Surface1") as Texture2D;
+					var flowtex = hit.collider.GetComponent(Renderer).sharedMaterial.GetTexture("_FlowMap") as Texture2D;
+					var wavetex = hit.collider.GetComponent(Renderer).sharedMaterial.GetTexture("_WaveTex") as Texture2D;
 					
-					if (checktex != null) pixelUV.x *= checktex.width;
-		    		if (checktex != null) pixelUV.y *= checktex.height;
+					//if (checktex != null) pixelUV.x *= checktex.width;
+		    		//if (checktex != null) pixelUV.y *= checktex.height;
 
 					// detail waves calculation
-					pixelUV = hit.textureCoord;
-					var offsD : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureOffset("_WaveLargeTex");
-					var tscaleD : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureScale("_WaveLargeTex");
-		   			pixelUV.x = (pixelUV.x * tscaleD.x + offsD.x);
-		   			pixelUV.y = (pixelUV.y * tscaleD.y + offsD.y);
+					//pixelUV = hit.textureCoord;
+					//var offsD : Vector2 = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureOffset("_WaveLargeTex");
+					//var tscaleD : Vector2 = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_WaveLargeTex");
+		   			//pixelUV.x = (pixelUV.x * tscaleD.x + offsD.x);
+		   			//pixelUV.y = (pixelUV.y * tscaleD.y + offsD.y);
 		   			
 
+		   			//if (checktex != null) pixelUV.x *= checktex.width;
+		    		//if (checktex != null) pixelUV.y *= checktex.height;
+		    		//if (checktex != null) getheight1 = checktex.GetPixel(pixelUV.x, pixelUV.y).r;
+					//if (QualitySettings.activeColorSpace == ColorSpace.Linear) getheight1 = Mathf.GammaToLinearSpace(getheight1);
+		    		
+		    		// CALCULATE DEEP WAVES
+		    		var twfMult : float = 0.15;
+					var waveSpd : Vector2 = Vector2(suimonoObject._suimono_uvx*0.4,suimonoObject._suimono_uvy*0.4); 
+					var tscaleN : Vector2 = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_Surface1");
+					
+		   			pixelUV.x = (hit.textureCoord.x * tscaleN.x * twfMult + waveSpd.x);
+		   			pixelUV.y = (hit.textureCoord.y * tscaleN.y * twfMult + waveSpd.y);
 		   			if (checktex != null) pixelUV.x *= checktex.width;
 		    		if (checktex != null) pixelUV.y *= checktex.height;
 		    		if (checktex != null) getheight1 = checktex.GetPixel(pixelUV.x, pixelUV.y).r;
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear) getheight1 = Mathf.GammaToLinearSpace(getheight1);
-		    		
-		    		// large waves calculation
-		    		pixelUV = hit.textureCoord;
-					var offsN : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureOffset("_Surface1");
-					var tscaleN : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureScale("_Surface1");
-		   			pixelUV.x = (pixelUV.x * tscaleN.x + offsN.x);
-		   			pixelUV.y = (pixelUV.y * tscaleN.y + offsN.y);
+		  
+		  			pixelUV2.x = (hit.textureCoord.x * tscaleN.x * twfMult - waveSpd.x - 0.5);
+		   			pixelUV2.y = (hit.textureCoord.y * tscaleN.y * twfMult - waveSpd.y - 0.5);
+				   	if (checktex != null) pixelUV2.x *= checktex.width;
+		    		if (checktex != null) pixelUV2.y *= checktex.height;
+		    		if (checktex != null) getheight2 = checktex.GetPixel(pixelUV2.x, pixelUV2.y).r;   			
 		   			
+		   			pixelUV3.x = (hit.textureCoord.x * tscaleN.x * twfMult - waveSpd.x - 0.25);
+		   			pixelUV3.y = (hit.textureCoord.y * tscaleN.y * twfMult);
+					if (checktex != null) pixelUV3.x *= checktex.width;
+		    		if (checktex != null) pixelUV3.y *= checktex.height;
+		    		if (checktex != null) getheight3 = checktex.GetPixel(pixelUV3.x, pixelUV3.y).r;   	   			
+
+		    		if (QualitySettings.activeColorSpace == ColorSpace.Linear){
+		    			getheight1 = Mathf.GammaToLinearSpace(getheight1);
+						getheight2 = Mathf.GammaToLinearSpace(getheight2);
+						getheight3 = Mathf.GammaToLinearSpace(getheight3);
+					} else {
+		    			getheight1 *= (0.4545);
+						getheight2 *= (0.4545);
+						getheight3 *= (0.4545);
+					}
+					
+					getheightW = Mathf.Lerp(0.0,suimonoObject.useDpWvHt,Mathf.Clamp01(getheight1+getheight2+getheight3));
+		   			
+		   			
+		   			
+		   			// CALCULATE DETAIL WAVES
+		    		twfMult = 1.0;// * suimonoObject.setDtScale;
+					waveSpd = Vector2(suimonoObject._suimono_uvx,suimonoObject._suimono_uvy); 
+					tscaleN = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_WaveLargeTex");
+					
+		   			pixelUV.x = (hit.textureCoord.x * tscaleN.x * twfMult + waveSpd.x);
+		   			pixelUV.y = (hit.textureCoord.y * tscaleN.y * twfMult + waveSpd.y);
 		   			if (checktex != null) pixelUV.x *= checktex.width;
 		    		if (checktex != null) pixelUV.y *= checktex.height;
-		    		if (checktex != null) getheight2 = checktex.GetPixel(pixelUV.x, pixelUV.y).r;
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear) getheight2 = Mathf.GammaToLinearSpace(getheight2);
-					
-					
-					//shoreline calculation
-					var offsS : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureOffset("_FlowMap");
-					var tscaleS : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureScale("_FlowMap");
-		   			pixelUV2.x = (pixelUV2.x) * tscaleS.x + offsS.x;
-		   			pixelUV2.y = (pixelUV2.y) * tscaleS.y + offsS.y;
+		    		if (checktex != null) getheight1 = checktex.GetPixel(pixelUV.x, pixelUV.y).r;
+		  
+		  			pixelUV2.x = (hit.textureCoord.x * tscaleN.x * twfMult - waveSpd.x - 0.5);
+		   			pixelUV2.y = (hit.textureCoord.y * tscaleN.y * twfMult - waveSpd.y - 0.5);
+				   	if (checktex != null) pixelUV2.x *= checktex.width;
+		    		if (checktex != null) pixelUV2.y *= checktex.height;
+		    		if (checktex != null) getheight2 = checktex.GetPixel(pixelUV2.x, pixelUV2.y).r;   			
 		   			
-		   			if (flowtex != null) pixelUV2.x *= flowtex.width;
-		    		if (flowtex != null) pixelUV2.y *= flowtex.height;
-		    		if (flowtex != null) getmap = flowtex.GetPixel(pixelUV2.x, pixelUV2.y);
-		    		
-		   			//if (flowtex != null) getmap = flowtex.GetPixel(pixelUV2.x, pixelUV2.y).r;
-		    		if (QualitySettings.activeColorSpace == ColorSpace.Linear) getmap.r = Mathf.GammaToLinearSpace(getmap.r);
-		    		
-	
-	
-					//
-					/*
-					//CALCULATE SHORE WAVE - turned off for now
-					var pixelUV3 = hit.textureCoord;
-					var offsW : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureOffset("_WaveTex");
-					var tscaleW : Vector2 = hit.collider.renderer.sharedMaterial.GetTextureScale("_WaveTex");
-		   			pixelUV3.x = ((pixelUV3.x) * tscaleW.x + offsW.x);
-		   			pixelUV3.y = ((pixelUV3.y) * tscaleW.y + offsW.y);
-		   			pixelUV3.x *= wavetex.width;
-		    		pixelUV3.y *= wavetex.height;
-		    		
-					var tex3 : Vector2 = Vector2(pixelUV3.x * (suimonoObject.setFlowShoreScale), pixelUV3.y * (suimonoObject.setFlowShoreScale)) ;
-					//var tex3 : Vector2 = Vector2(pixelUV3.x, pixelUV3.y);
+		   			pixelUV3.x = (hit.textureCoord.x * tscaleN.x * twfMult - waveSpd.x - 0.25);
+		   			pixelUV3.y = (hit.textureCoord.y * tscaleN.y * twfMult);
+					if (checktex != null) pixelUV3.x *= checktex.width;
+		    		if (checktex != null) pixelUV3.y *= checktex.height;
+		    		if (checktex != null) getheight3 = checktex.GetPixel(pixelUV3.x, pixelUV3.y).r;   	   			
 
-				 	var flowmap : Vector2 = Vector2((getmap.r + getmap.g)* 2.0 - 1.0,getmap.b* 2.0 - 1.0);
-					flowmap.x = Mathf.Lerp(0.0,flowmap.x,suimonoObject.setFlowShoreScale);
-					flowmap.y = Mathf.Lerp(0.0,flowmap.y,suimonoObject.setFlowShoreScale);
+		    		if (QualitySettings.activeColorSpace == ColorSpace.Linear){
+		    			getheight1 = Mathf.GammaToLinearSpace(getheight1);
+						getheight2 = Mathf.GammaToLinearSpace(getheight2);
+						getheight3 = Mathf.GammaToLinearSpace(getheight3);
+					} else {
+						getheight1 *= (0.4545);
+						getheight2 *= (0.4545);
+						getheight3 *= (0.4545);
+					}
 					
-					//var waveTex : Color = wavetex.GetPixel(tex3.x+((suimonoObject.setflowOffX+flowmap.x*wavetex.width)),tex3.y+((suimonoObject.setflowOffY+flowmap.y*wavetex.height)));
-					//var waveTex : Color = wavetex.GetPixel((tex3.x+flowmap.x)*wavetex.width,(tex3.y+flowmap.y)*wavetex.height);
-					var waveTex : Color = wavetex.GetPixel(wavetex.width-(tex3.x+(suimonoObject.setflowOffX+flowmap.x)*wavetex.width),(tex3.y+(suimonoObject.setflowOffY+flowmap.y)*wavetex.height));
-					//var waveTex : Color = wavetex.GetPixel((tex3.x+(suimonoObject.setflowOffX+flowmap.x)*wavetex.width),(tex3.y+(suimonoObject.setflowOffY+flowmap.y)*wavetex.height));		
-					//var waveTex : Color = wavetex.GetPixel(wavetex.width-(((tex3.x*suimonoObject.setflowOffX)+flowmap.x)*wavetex.width),wavetex.height-(((tex3.y*suimonoObject.setflowOffY)+flowmap.y)*wavetex.height));
-					//var waveTex : Color = wavetex.GetPixel((pixelUV3.x+((suimonoObject.setflowOffX+flowmap.x)*wavetex.width)),(pixelUV3.y+((suimonoObject.setflowOffX+flowmap.x)*wavetex.width)));
-					//var waveTex : Color = wavetex.GetPixel(pixelUV3.x+suimonoObject.setflowOffX,pixelUV3.y+suimonoObject.setflowOffY);
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear) waveTex.r = Mathf.GammaToLinearSpace(waveTex.r);
+					getheightD1 = Mathf.Lerp(0.0,suimonoObject.useDtHt,Mathf.Clamp01(getheight1+getheight2+getheight3));
+		   			
+		   			
+		   			
+		   			
+		   			
+		   			
+		   			
+		   			
+		   			
+		   			
+					//shoreline calculation - Normalize
+		    		twfMult = 1.0;// * suimonoObject.setDtScale;
+					waveSpd = Vector2(suimonoObject._suimono_uvx,suimonoObject._suimono_uvy); 
+					tscaleN = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_FlowMap");
 					
-					
-					//
-					pixelUV3 = hit.textureCoord;
-					offsW = hit.collider.renderer.sharedMaterial.GetTextureOffset("_WaveTex");
-					tscaleW = hit.collider.renderer.sharedMaterial.GetTextureScale("_WaveTex");
-		   			pixelUV3.x = ((1.0-pixelUV3.x) * tscaleW.x + offsW.x);
-		   			pixelUV3.y = ((1.0-pixelUV3.y) * tscaleW.y + offsW.y);
-		   			//pixelUV3.x *= wavetex.width;
-		    		//pixelUV3.y *= wavetex.height;
+		   			pixelUV.x = (hit.textureCoord.x * tscaleN.x * twfMult);
+		   			pixelUV.y = (hit.textureCoord.y * tscaleN.y * twfMult);
+		   			if (flowtex != null) pixelUV.x *= flowtex.width;
+		    		if (flowtex != null) pixelUV.y *= flowtex.height;
+		    		if (flowtex != null) getmap.r = flowtex.GetPixel(pixelUV.x, pixelUV.y).r;
 		    		
-					//tex3 = Vector2(pixelUV3.x * (suimonoObject.setFlowShoreScale), pixelUV3.y * (suimonoObject.setFlowShoreScale)) ;
-					//var tex3 : Vector2 = Vector2(pixelUV3.x, pixelUV3.y);
-
-				 	//flowmap = Vector2((getmap.r + getmap.g)* 2.0 - 1.0,getmap.b* 2.0 - 1.0);
+		    		if (QualitySettings.activeColorSpace == ColorSpace.Linear){
+		    			getmap.r = Mathf.GammaToLinearSpace(getmap.r);
+				   		getmap.g = Mathf.GammaToLinearSpace(getmap.g);
+		    		} else {
+		    			getmap.r *= (0.4545);
+						getmap.g *= (0.4545);
+					}
+		    		
+		    		
+		    		
+		    		//shoreline calculation - Shore wave Height
+			    	//twfMult = 1.0;// * suimonoObject.setDtScale;
+					//waveSpd = Vector2(suimonoObject._suimono_uvx,suimonoObject._suimono_uvy); 
+					//tscaleN = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_FlowMap");
+					
+					//var getflowmap : Color;
+					var getwavetex : Color;
+		   			//pixelUV.x = (hit.textureCoord.x * tscaleN.x * twfMult);
+		   			//pixelUV.y = (hit.textureCoord.y * tscaleN.y * twfMult);
+		   			//if (flowtex != null) pixelUV.x *= flowtex.width;
+		    		//if (flowtex != null) pixelUV.y *= flowtex.height;
+		    		//if (flowtex != null) getflowmap = flowtex.GetPixel(pixelUV.x, pixelUV.y);
+		    		
+				 	//var flowmap : Vector2 = Vector2(Mathf.Clamp01(getflowmap.r + getflowmap.g),getflowmap.b);
+				 	//flowmap.x *= 2.0 - 1.0;
+				 	//flowmap.y *= 2.0 - 1.0;
 					//flowmap.x = Mathf.Lerp(0.0,flowmap.x,suimonoObject.setFlowShoreScale);
 					//flowmap.y = Mathf.Lerp(0.0,flowmap.y,suimonoObject.setFlowShoreScale);
+
+			    	twfMult = suimonoObject.setFlowShoreScale;
+					waveSpd = Vector2(suimonoObject._suimono_uvx,suimonoObject._suimono_uvy); 
+					tscaleN = hit.collider.GetComponent(Renderer).sharedMaterial.GetTextureScale("_WaveMap");
+		   			pixelUV.x = (hit.textureCoord.x * tscaleN.x * twfMult)+suimonoObject.setflowOffX;//+flowmap.x;
+		   			pixelUV.y = (hit.textureCoord.y * tscaleN.y * twfMult)+suimonoObject.setflowOffY;//+flowmap.y;
+		   			if (wavetex != null) pixelUV.x *= wavetex.width;
+		    		if (wavetex != null) pixelUV.y *= wavetex.height;
+
+					if (wavetex != null) getwavetex = wavetex.GetPixel(pixelUV.x,pixelUV.y);
 					
-					//waveTex = wavetex.GetPixel(wavetex.width-(tex3.x+(suimonoObject.setflowOffX+flowmap.x)*wavetex.width),(tex3.y+(suimonoObject.setflowOffY+flowmap.y)*wavetex.height));
-					waveTex = wavetex.GetPixel(wavetex.width-((pixelUV3.x+(suimonoObject.setflowOffX+flowmap.x))*wavetex.width),wavetex.height-((pixelUV3.y+(suimonoObject.setflowOffY+flowmap.y))*wavetex.height));
-					if (QualitySettings.activeColorSpace == ColorSpace.Linear) waveTex.r = Mathf.GammaToLinearSpace(waveTex.r);
-					//
-					*/
-					
+		    		if (QualitySettings.activeColorSpace == ColorSpace.Linear){
+			    		getwavetex.r = Mathf.GammaToLinearSpace(getwavetex.r);
+			    		getwavetex.g = Mathf.GammaToLinearSpace(getwavetex.g);
+			    		getwavetex.b = Mathf.GammaToLinearSpace(getwavetex.b);
+		    		} else {
+						getwavetex.r *= (0.4545);
+						getwavetex.g *= (0.4545);
+						getwavetex.b *= (0.4545);
+					}
+
+	//wrap normal to shore calculations
+	//float4 getflowmap = tex2D(_FlowMap, IN.uv_FlowMap);
+ 	//float2 flowmap = float2(saturate(getflowmap.r + getflowmap.g),getflowmap.b) * 2.0 - 1.0;
+	//flowmap.x = lerp(0.0,flowmap.x,_FlowShoreScale);
+	//flowmap.y = lerp(0.0,flowmap.y,_FlowShoreScale);
+	//half4 waveTex = tex2D(_WaveTex, float2((IN.uv_FlowMap.x*shoreWaveScale)+flowOffX+flowmap.x,(IN.uv_FlowMap.y*shoreWaveScale)+flowOffY+flowmap.y));
+	//o.Normal = lerp(o.Normal,half3(0,0,1),waveTex.g * _WaveShoreHeight * flow.g);
+	
+
+
+
 
 		    		//####   final Height calculation  #####
-		   			getheight = (getheight1 * suimonoObject.detailHeight);
-		   			getheight += (getheight2 * suimonoObject.waveHeight);
+		    		getheight = getheightW + getheightD1;
+		    		
+		    	
+
+		    		
+		   			//getheight = (getheight1 * suimonoObject.detailHeight);
+		   			//getheight += (getheight2 * suimonoObject.waveHeight);
 		   				//normalize shore
 		   				getheight = Mathf.Lerp(getheight,0.0, getmap.r * suimonoObject.normalShore);
+		   				
 		   				//add shore waves - turned off for now
+		   				getheight += Mathf.Lerp(0.0,1.0, getwavetex.g * suimonoObject.usewaveShoreHt * getmap.r);
+		   				//suimonoObject.usewaveShoreHt
+		   									//o.Normal = lerp(o.Normal,half3(0,0,1),getwavetex.g * _WaveShoreHeight * flow.g);
+		   									
 		   				//getheight += Mathf.Lerp(0.0,suimonoObject.usewaveShoreHt,waveTex.r)*getmap.r;
 		   		}
-			   		
-			   	// default height to hit.point on flat water planes
-			   	if (suimonoObject != null){
-				   	if (suimonoObject.typeIndex == 2 || unityVersionIndex == 4 || unityVersionIndex == 5){
-				   		getheight = 0.0;//surfaceLevel;
-				   	}
-			   	}
-		   		
+
 		   		
 	    		}
 	    		
 	    		break;
+	    		
+	    		} else {
+
+				   	getheight = 0.0;//surfaceLevel;
+				}
+	    		}
 			}
-			
-			
 		}
+
+	//}
 	}
 
 
+	
+
 	var returnValue : float = 0.0;
 	
+	//if (returnMode == "depth") returnValue = (surfaceLevel+getheight)-groundLevel;
 	if (returnMode == "height") returnValue = getheight;
 	if (returnMode == "surfaceLevel") returnValue = surfaceLevel+getheight;
 	if (returnMode == "baseLevel") returnValue = surfaceLevel;

@@ -45,6 +45,9 @@ class suimono_module_editor extends Editor {
 		}
 		//#endif
 
+		var setWidth = Screen.width-220;
+		if (setWidth < 120) setWidth = 120;
+		
 		//SUIMONO LOGO
 		var buttonText : GUIContent = new GUIContent(""); 
 		var buttonStyle : GUIStyle = GUIStyle.none; 
@@ -66,11 +69,13 @@ class suimono_module_editor extends Editor {
 		//}
         //GUILayout.Space(10.0);
 		EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+10, 130, 18),"Unity Version Target");
-		target.unityVersionIndex = EditorGUI.Popup(Rect(rt.x+margin+160, rt.y+10, 145, 18),"",target.unityVersionIndex, target.unityVersionOptions);
-
-		target.setCamera = EditorGUI.ObjectField(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Scene Camera Object",target.setCamera, Transform, true);
-		target.setTrack = EditorGUI.ObjectField(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Scene Track Object",target.setTrack, Transform, true);
-		target.soundObject = EditorGUI.ObjectField(Rect(rt.x+margin+10, rt.y+70, 370, 18),"Suimono Sound Object",target.soundObject, Transform, true);
+		target.unityVersionIndex = EditorGUI.Popup(Rect(rt.x+margin+165, rt.y+10, setWidth, 18),"",target.unityVersionIndex, target.unityVersionOptions);
+		EditorGUI.LabelField(Rect(rt.x+margin+1, rt.y+30, 140, 18),"Scene Camera Object");
+		target.setCamera = EditorGUI.ObjectField(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.setCamera, Transform, true);
+		EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Scene Track Object");
+		target.setTrack = EditorGUI.ObjectField(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.setTrack, Transform, true);
+		EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 140, 18),"Suimono Sound Object");
+		target.soundObject = EditorGUI.ObjectField(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"",target.soundObject, Transform, true);
 			
 		GUILayout.Space(90.0);
 		
@@ -80,30 +85,37 @@ class suimono_module_editor extends Editor {
        	GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("GENERAL SETTINGS"));
        	 	
        	if (target.showGeneral){
-			target.playSounds = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Enable Sounds", target.playSounds);
-			target.maxVolume = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Max Sound Volume",target.maxVolume,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Enable Sounds");
+			target.playSounds = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"", target.playSounds);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Max Sound Volume");
+			target.maxVolume = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.maxVolume,0.0,1.0);
 			
 			
-
-			target.enableUnderwaterFX = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+80, 200, 18),"Enable Underwater FX", target.enableUnderwaterFX);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+80, 140, 18),"Enable Underwater FX");
+			target.enableUnderwaterFX = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+80, setWidth, 18),"", target.enableUnderwaterFX);
 			//target.enableUnderwaterDeferred = EditorGUI.Toggle(Rect(rt.x+margin+210, rt.y+80, 200, 18),"Use Deferred Renderer", target.enableUnderwaterDeferred);
-			target.cameraPlane_offset = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+100, 370, 18),"FX Offset",target.cameraPlane_offset,0.1,5.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+100, 140, 18),"Enable Transition FX");		
+			target.enableTransition = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+100, setWidth, 18),"", target.enableTransition);
 			
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+120, 140, 18),"FX Offset");
+			target.cameraPlane_offset = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+120, setWidth, 18),"",target.cameraPlane_offset,0.1,5.0);
 			//target.manageShaders = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+130, 170, 18),"Manage Shaders", target.manageShaders);
-			target.enableInteraction = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+130, 370, 18),"Enable Interaction", target.enableInteraction);
-			target.showDebug = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+150, 170, 18),"Show Debug", target.showDebug);
-			
-			target.useDarkUI = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+170, 170, 18),"Use Dark Skin",target.useDarkUI);
-			
-			target.useUVReversal = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+190, 170, 18),"Use UV Reversal",target.useUVReversal);
-				
-			target.includePresetsInBuild = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+210, 170, 18),"Include Presets in Build",target.includePresetsInBuild);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+150, 140, 18),"Enable Interaction");
+			target.enableInteraction = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+150, setWidth, 18),"", target.enableInteraction);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+170, 140, 18),"Show Debug");
+			target.showDebug = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+170, setWidth, 18),"", target.showDebug);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+190, 140, 18),"Use Dark Skin");
+			target.useDarkUI = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+190, setWidth, 18),"",target.useDarkUI);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+210, 140, 18),"Use UV Reversal");
+			target.useUVReversal = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+210, setWidth, 18),"",target.useUVReversal);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+230, 140, 18),"Include Presets in Build");
+			target.includePresetsInBuild = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+230, setWidth, 18),"",target.includePresetsInBuild);
 			if (target.includePresetsInBuild){
-			EditorGUI.HelpBox(Rect(rt.x+margin+10, rt.y+230, 370, 55),"Note: This option enables accessing preset data in game builds.  You must manually move the _PRESETS.txt file that is located under /RESOURCES into the Resources folder in your build.  Otherwise, errors in the generation of your water surfaces may occur.",MessageType.None);
+			EditorGUI.HelpBox(Rect(rt.x+margin+165, rt.y+230, setWidth, 55),"Note: This option enables accessing preset data in game builds.  You must manually move the _PRESETS.txt file that is located under /RESOURCES into the Resources folder in your build.  Otherwise, errors in the generation of your water surfaces may occur.",MessageType.None);
 			GUILayout.Space(50.0);
 			}
 
-			GUILayout.Space(220.0);
+			GUILayout.Space(240.0);
 		}
 		GUILayout.Space(10.0);
 		
@@ -114,16 +126,21 @@ class suimono_module_editor extends Editor {
        	GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("PERFORMANCE SETTINGS"));
        	 	
        	if (target.showPerformance){
-       		
-       		target.enableDynamicReflections = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+30, 170, 18),"Use Dynamic Reflections", target.enableDynamicReflections);
-			target.causticObjectNum = EditorGUI.IntSlider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Number of Caustics",target.causticObjectNum,0,45);
-			target.causticsOnMobile = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+70, 170, 18),"Enable Caustics on Mobile", target.causticsOnMobile);
-			target.blurSamples = EditorGUI.IntSlider(Rect(rt.x+margin+10, rt.y+90, 370, 18),"Blur Quality Samples",target.blurSamples,2,45);
+
+       		//target.enableRefraction = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+30, 170, 18),"Use Refraction & Blur FX", target.enableRefraction);
+       		EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Use Dynamic Reflections");
+       		target.enableDynamicReflections = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"", target.enableDynamicReflections);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Number of Caustics");
+			target.causticObjectNum = EditorGUI.IntSlider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.causticObjectNum,0,45);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 140, 18),"Enable Caustics on Mobile");
+			target.causticsOnMobile = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"", target.causticsOnMobile);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 140, 18),"Blur Quality Samples");
+			target.blurSamples = EditorGUI.IntSlider(Rect(rt.x+margin+165, rt.y+90, setWidth, 18),"",target.blurSamples,2,45);
 			
+					
+
 			
-			
-			
-			//GUILayout.Space(40.0);
+			//GUILayout.Space(40.0);s
 				
 		}
        	GUILayout.Space(10.0);

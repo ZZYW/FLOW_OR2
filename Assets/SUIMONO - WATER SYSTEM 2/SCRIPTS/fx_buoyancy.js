@@ -4,6 +4,7 @@
 var applyToParent : boolean = false;
 var engageBuoyancy : boolean = false;
 var inheritForce : boolean = false;
+var keepAtSurface : boolean = false;
 var buoyancyStrength : float = 1.0;
 var buoyancyOffset : float = 0.0;
 var surfaceRange : float = 0.2;
@@ -31,12 +32,29 @@ private var waveHeight : float = 0.0;
 private var modTime : float = 0.0;
 private var splitFac : float = 1.0;
 
+private var rendererComponent : Renderer;
+private var rigidbodyComponent : Rigidbody;
+
+
+function OnDrawGizmos (){
+	var gizPos : Vector3 = transform.position;
+	gizPos.y += 0.03;
+	Gizmos.DrawIcon(gizPos, "gui_icon_buoy.psd", true);
+	gizPos.y -= 0.03;
+	//Gizmos.color = Color(0.4,0.7,1.0,0.6);
+	//Gizmos.DrawSphere(gizPos, 0.2);
+	Gizmos.color = Color(0.2,0.4,1.0,0.75);
+	Gizmos.DrawWireSphere(gizPos, 0.2);
+	Gizmos.DrawWireSphere(gizPos, 0.195);
+	Gizmos.DrawWireSphere(gizPos, 0.19);
+}
 
 
 function Awake() {
 
 	moduleObject = GameObject.Find("SUIMONO_Module").gameObject.GetComponent(SuimonoModule);
-	
+	rendererComponent = GetComponent(Renderer);
+
 }
 
 
@@ -63,14 +81,14 @@ function FixedUpdate () {
 	forceHeightFactor = Mathf.Clamp(forceHeightFactor,0.0,1.0);
 	
 	//set debug visibility
-	if (renderer && applyToParent){
+	if (rendererComponent && applyToParent){
 	if (moduleObject != null){
 		if (moduleObject.showDebug){
-			renderer.enabled = true;
+			rendererComponent.enabled = true;
 		}
 	
-		if (!moduleObject.showDebug && renderer){
-			renderer.enabled = false;
+		if (!moduleObject.showDebug && rendererComponent){
+			rendererComponent.enabled = false;
 		}
 	}
 	}
@@ -80,10 +98,17 @@ function FixedUpdate () {
 	//set physics target
 	if (applyToParent){
 		physTarget = this.transform.parent.transform;
+		if (rigidbodyComponent == null){
+			rigidbodyComponent = physTarget.GetComponent(Rigidbody);
+		}
 	} else {
 		physTarget  = this.transform;
+		if (rigidbodyComponent == null){
+			rigidbodyComponent = GetComponent(Rigidbody);
+		}
 	}
 	
+
 	
 	//Reset values
 	isUnderwater = false;
@@ -120,8 +145,9 @@ function FixedUpdate () {
 
 	
 	//set buoyancy
+	//if (!keepAtSurface){
 	if (engageBuoyancy && isOverWater){
-	if (physTarget.rigidbody && !physTarget.rigidbody.isKinematic){
+	if (rigidbodyComponent && !rigidbodyComponent.isKinematic){
 		//if (underwaterLevel > 0.1){
 			
 			var buoyancyFactor : float = 10.0;
@@ -130,9 +156,9 @@ function FixedUpdate () {
 				
 				// add vertical force to buoyancy while underwater
 				isUnder = true;
-				var forceMod : float = (buoyancyFactor * (buoyancyStrength * physTarget.rigidbody.mass) * (underwaterLevel) * splitFac);
-				if (physTarget.rigidbody.velocity.y < maxVerticalSpeed){
-					physTarget.rigidbody.AddForceAtPosition(Vector3(0,1,0) * forceMod, transform.position);
+				var forceMod : float = (buoyancyFactor * (buoyancyStrength * rigidbodyComponent.mass) * (underwaterLevel) * splitFac);
+				if (rigidbodyComponent.velocity.y < maxVerticalSpeed){
+					rigidbodyComponent.AddForceAtPosition(Vector3(0,1,0) * forceMod, transform.position);
 				}
 				modTime = 0.0;
 				
@@ -141,8 +167,8 @@ function FixedUpdate () {
 				// slow down vertical velocity as it reaches water surface or wave zenith
 				isUnder = false;
 				modTime = (this.transform.position.y+buoyancyOffset) / (waveHeight+Random.Range(0.0,0.25));
-				if (physTarget.rigidbody.velocity.y > 0.0){
-					physTarget.rigidbody.velocity.y = Mathf.SmoothStep(physTarget.rigidbody.velocity.y,0.0,modTime);
+				if (rigidbodyComponent.velocity.y > 0.0){
+					rigidbodyComponent.velocity.y = Mathf.SmoothStep(rigidbodyComponent.velocity.y,0.0,modTime);
 				}
 				
 			}
@@ -156,27 +182,34 @@ function FixedUpdate () {
 				var forceSpeed : float = moduleObject.SuimonoGetHeight(this.transform.position,"speed");
 				var waveHt : float = moduleObject.SuimonoGetHeight(this.transform.position,"wave height");
 				var waveFac : float = Mathf.Lerp(forceHeightFactor,1.0,waveHt);//forceHeightFactor
-				physTarget.rigidbody.AddForceAtPosition(Vector3(forceAngles.x,0,forceAngles.y) * (buoyancyFactor*2.0) * forceSpeed * waveFac * splitFac * forceAmount, transform.position);
+				rigidbodyComponent.AddForceAtPosition(Vector3(forceAngles.x,0,forceAngles.y) * (buoyancyFactor*2.0) * forceSpeed * waveFac * splitFac * forceAmount, transform.position);
 			}
 			}
 			
 
 	}
 	}
-	
+	//}
+
 	
 }
 
 
 
 function LateUpdate(){
-
+	
+	if (keepAtSurface){
+		//rigidbodyComponent.isKinematic = true;
+		//rigidbodyComponent.useGravity = false;
+		//physTarget.transform.position.y = (waveHeight - (this.transform.localPosition.y));
+	}
+	
 	//under surface range
 	//if (this.transform.position.y > waveHeight-surfaceRange && isUnder){
 	
-		//if (this.rigidbody.velocity.y > 0.0) this.rigidbody.velocity.y = 0.0;
+		//if (rigidbodyComponent.velocity.y > 0.0) rigidbodyComponent.velocity.y = 0.0;
 
-		//if (Mathf.Approximately(this.rigidbody.velocity.y,0.0)){
+		//if (Mathf.Approximately(rigidbodyComponent.velocity.y,0.0)){
 			//this.transform.position.y = waveHeight;
 			//isUnder = false;
 		//}

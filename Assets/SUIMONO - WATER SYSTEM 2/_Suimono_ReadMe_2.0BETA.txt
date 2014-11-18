@@ -1,7 +1,7 @@
 ---------------------------------------------------
 SUIMONO: CUSTOMIZABLE WATER SYSTEM
         Copyright ©2014 Tanuki Digital
-               Version 2.0 BETA (0.86)
+               Version 2.0 BETA (0.88)
 ---------------------------------------------------
 
 Thank you for supporting SUIMONO!
@@ -77,18 +77,58 @@ The Preset Manager has been completely rewritten to be simple to use and automat
 ----------------------
 VERSION HISTORY
 ----------------------
+ver.2.0Beta088  - NEW - All new water suface shaders.  Improved wave rendering, improved reflection rendering, improved performance (fewer render passes).
+	        - NEW - Added "Shadow Amount" attribute, contributes wave shadow surface detail.
+	        - NEW - Added "Surface Blend Color" attribute, performs color multiply function.
+	        - NEW - Added "Surface High Color" attribute to tent surface waves.
+	        - NEW - Added "Back Diffuse Color" attribute to simulate light bleeding on backside of waves.
+	        - NEW - Added custom editor gizmos for fx_objects and buoyancy objects.
+	        - NEW - Added Option to enable/disable screen transition effects (option located on the Suimono_module object).
+	        - NEW - Preset system can now select between multiple preset files, for better categorization and customization.
+	        - NEW - Preset System has new default setting for "None", allowing you to reliably change settings in Editor Mode.
+	        - NEW - Caustic color and intensity can now be affected by scene lighting.
+	        - NEW - Added "Light Factor" underwater setting that modulates underwater lighting brightness.
+	        - CHANGE - Code updates for Unity 5 compatibility.
+	        - CHANGE - Better water rendering while in Editor Mode.
+	        - CHANGE - Improved splash fx visuals/rendering.
+	        - CHANGE - improved blur algorithm for higher performance. 
+	        - CHANGE - Removed "Specular Low" attribute.
+	        - CHANGE - Water flow direction and flow speed and foam speed settings now relinked tot he preset saving system.
+	        - CHANGE - reflection shader no longer darkens as it fades out.
+	        - CHANGE - Updated underwater shader reflections and calculations.
+	        - CHANGE - Caustic effects now clamp to 3d wave height area.
+	        - CHANGE - Added default material support to the Mosule Library component.
+	        - FIX - Nested Prefabs support... Water surfaces now protect material references during prefab creation.
+	        - FIX - Improved support for multiple water surfaces in a single scene.
+	        - FIX - All Inspector UI's now compatible with Unity 4.6+  (no more inspector stretch issues)
+	        - FIX - light absorption attribute now works properly again. (affects depth transparency visuals)
+	        - FIX - Deleting the last preset in the presets list corrupted the preset data file.
+	        - FIX - The presets list now updates right away when deleting a preset.
+	        - FIX - "return default value implicitly" error spamming now fixed.
+	        - FIX - Manually placed caustic_objects now react as they are set, and use a default light cookie.
+		- FIX - Console no longer spammed with errors when scene camera isn't defined.
+
+ver.2.0Beta087 - NEW - Added "Use Refraction & Blur FX" option under Performance Settings.  Disabling this improves performance especially on Mac.
+	        - NEW - Added "Infinite Scale" attribute.  This controls the size of the infinite ocean tiling under DX9, set this to a larger number to enlarge the detail tile.
+	        - CHANGE - Removed "Overall Scale" Attribute.
+	        - CHANGE - Improved Refraction and reflection distortion.
+	        - CHANGE - Improved reflection compositing.
+	        - CHANGE - Reformulated all presets concerning new tweaks.
+	        - FIX - "use UV Reversal" setting now works properly when underwater.  Use this setting to fix inadvertently flipped visuals.
+	        - FIX - underwater water color now renders as set in the inspector.
+	        - FIX - color darkening on refraction and blur layers.  Now refracts exactly what's under the surface.
+	        - FIX - setting caustics to "0" freezes Unity, this is now fixed.
+
 ver.2.0Beta086 - NEW - Infinite Ocean now works under DX9. (desktop/weblapyer, Unity Free, Android and iPhone.)
 	        - NEW - Updated Wave Normals for better wave and light rendering.
 	        - NEW - Added "Overall Brightness" attribute to manually adjust the light/dark levels of the water surface.
 	        - NEW - Added parallax to Surface Shaders, for better near-view wave visuals.
-	        - CHANGE - Updated Preset visual tweaks.
 	        - CHANGE - Updated shader surface calculations.  Specular now rendered after alpha pass.
 	        - CHANGE - Updated depth Rendering, fixes various depth, color, and alpha overlap problems under Unity Pro.
 	        - FIX - Incorporated "Overall Transparency" attribute into the preset system.
 	        - FIX - Added "Auto Tessellation" setting back to tessellation tab. (was overwritten in previous version)
 	        - FIX - pink shader error for Unity Dx11 shader in Unity Free.
 	        - FIX - Caustic effects are now working again. 
-	        - FIX - Periodic effect "implicit" console error.
 
 ver.2.0Beta085 - NEW - Tessellation and 3D wave Displacement now works on Unity Indie (new basic_dx11 shaders added).
 	        - NEW - Added "Unity DX11" version target option for Unity Indie.

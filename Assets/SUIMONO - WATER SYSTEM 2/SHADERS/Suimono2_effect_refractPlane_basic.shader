@@ -30,6 +30,8 @@ Properties {
 	_Ramp2D ("BRDF Ramp", 2D) = "gray" {}
 	_FalloffTex ("Falloff Texture", 2D) = "gray" {}
 
+	_UnderReflDist ("Light Factor", Range(0.0,1.0)) = 1.0
+	
 }
 
 
@@ -83,13 +85,18 @@ float _BumpStrength;
 float _MasterScale;
 float _RefrSpeed;
 sampler2D _FalloffTex;
-
+float _UnderReflDist;
 
 fixed4 LightingSuimonoNoLight (SurfaceOutput s, fixed3 lightDir, half3 viewDir, fixed atten)
 {
+
+	// modulate light function
+	half4 inLight = _LightColor0;
+	inLight = lerp(inLight*0.0,inLight,_UnderReflDist);
+	
 	fixed4 col;
 	
-	col.rgb = s.Albedo * lerp(fixed3(1,1,1),_DepthColorB.rgb,0.2);// * _LightColor0.a;
+	col.rgb = s.Albedo * lerp(fixed3(1,1,1),_DepthColorB.rgb,0.2) * inLight.a;
 	col.rgb *= s.Gloss;
 	col.a = s.Alpha;
 	

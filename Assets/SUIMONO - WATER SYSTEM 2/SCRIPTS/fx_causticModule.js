@@ -4,8 +4,10 @@
 
 //PUBLIC VARIABLES
 var enableCaustics : boolean = true;
+var causticTint : Color = Color(1,1,1,1);
 //var causticsOnMobile : boolean = false;
 var causticRange : float = 50.0;
+var sceneLightObject : Transform;
 var causticObject : Transform;
 
 var useTheseLayers : LayerMask = 0;
@@ -33,6 +35,8 @@ private var causticObjectsFX : fx_causticObject[];
 
 var savedPosition : Vector3;
 
+//private var sceneLightComponent: Light;
+
 
 function Awake() {
 	
@@ -46,9 +50,19 @@ function Awake() {
 	
 function Start(){
 
+	//if (sceneLightObject != null){
+	//	sceneLightComponent = sceneLightObject.GetComponent(Light);
+	//}
+	
+	if (moduleObject.causticObjectNum > 0){
+		useCaustics = true;
+	} else {
+		useCaustics = false;
+	}
+	
 	//mobile check
 	if (!moduleObject.causticsOnMobile){
-		if (moduleObject.unityVersionIndex == 3 || moduleObject.unityVersionIndex == 4){
+		if (moduleObject.unityVersionIndex == 4 || moduleObject.unityVersionIndex == 5){
 			useCaustics = false;
 		}
 	} else {
@@ -154,7 +168,7 @@ function SetGridSpace(){
 						if (posPass){
 							causticObjects[lx].transform.position.x = setPX;
 							causticObjects[lx].transform.position.z = setPY;
-							causticObjects[lx].light.intensity = 0.0;
+							causticObjects[lx].GetComponent(Light).intensity = 0.0;
 						}
 
 					}

@@ -1,7 +1,8 @@
 #pragma strict
 
 enum Sui_Demo_TriggerType{
-		switchtovehicle
+		switchtovehicle,
+		watersurface
 		}
 var triggerType : Sui_Demo_TriggerType =  Sui_Demo_TriggerType.switchtovehicle;
 var requireLineOfSight : boolean = true;
@@ -73,12 +74,14 @@ function Update () {
 		useLabel = "";
 		onAction= false;
 		if (requireReset) resetTrigger = true;
-		if (triggerType == Sui_Demo_TriggerType.switchtovehicle){
+		if (suimonoCamera != null){
+		if (triggerType == Sui_Demo_TriggerType.switchtovehicle && suimonoCamera != null){
 			if (suimonoCamera.controllerType == Sui_Demo_ControllerType.vehicle){
 				suimonoCamera.controllerType = Sui_Demo_ControllerType.character;
 			} else if (suimonoCamera.controllerType == Sui_Demo_ControllerType.character){
 				suimonoCamera.controllerType = Sui_Demo_ControllerType.vehicle;
 			}
+		}
 		}
 		
 	}
@@ -86,12 +89,13 @@ function Update () {
 	}
 	
 	//SHOW LABEL
+	if (suimonoCamera != null){
 	if (isInRange && useLabel != "" && suimonoCamera.vehicleReset){
 		onLabel = true;
 	} else {
 		onLabel = false;
 	}
-
+	}
 
 
 }
@@ -99,32 +103,35 @@ function Update () {
 
 
 function OnTriggerEnter(other : Collider){
+	if (trackObject != null){
 	if (other == trackObject.GetComponent(Collider)){
 		isInRange = true;
 		if (requireLineOfSight && !isInSight) isInRange = false;
-	}
+	}}
 }
 
 function OnTriggerStay(other : Collider){
+	if (trackObject != null){
 	if (other == trackObject.GetComponent(Collider)){
 		isInRange = true;
 		if (requireLineOfSight && !isInSight) isInRange = false;
-	}
+	}}
 }
 
 
 function OnTriggerExit(other : Collider){
+	if (trackObject != null){
 	if (other == trackObject.GetComponent(Collider)){
 		isInRange = false;
 		resetTrigger = false;
-	}
+	}}
 }
 
 
 function CheckLineOfSight(){
 	var retBool : boolean = false;
 	
-	if (requireLineOfSight){
+	if (requireLineOfSight && Camera.main != null){
 		var hits : RaycastHit[];
 		var ray : Ray = Camera.main.ViewportPointToRay (Vector3(0.5,0.5,0));
 		hits = Physics.RaycastAll(ray,500.0);

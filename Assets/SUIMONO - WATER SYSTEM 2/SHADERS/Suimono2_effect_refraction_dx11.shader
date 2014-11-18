@@ -22,7 +22,7 @@ SubShader {
 
 GrabPass {
 	"_waterTex1"
-	Tags {"Queue" = "Transparent+1" "IgnoreProjector"="True"}
+	Tags {"Queue" = "Overlay+22" "IgnoreProjector"="True"}
 	Name "ScreenGrab"
 }
 
@@ -34,7 +34,7 @@ GrabPass {
 // -------------------------------------
 //   UNDERWATER REFRACTION and BLURRING 
 // -------------------------------------
-Tags {"Queue"= "Transparent+1" "IgnoreProjector"="True"} //Geometry
+Tags {"Queue"= "Overlay+22" "IgnoreProjector"="True"} //Geometry
 Cull Back
 //Name "DropDistortion"
 Blend SrcAlpha OneMinusSrcAlpha
@@ -54,6 +54,8 @@ fixed4 LightingSuimonoNoLight (SurfaceOutput s, fixed3 lightDir, half3 viewDir, 
 	fixed4 col;
 	col.rgb = s.Albedo * atten;
 	col.a = s.Alpha * atten;
+
+	
 	return col;
 }
 
@@ -106,7 +108,6 @@ void surf (Input IN, inout SurfaceOutput o) {
 	o.Albedo = oCol.rgb;
 	o.Alpha = maskTex.r;
 
-	
 	
 }
 ENDCG

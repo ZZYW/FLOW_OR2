@@ -30,6 +30,8 @@ Properties {
 	_Ramp2D ("BRDF Ramp", 2D) = "gray" {}
 	_FalloffTex ("Falloff Texture", 2D) = "gray" {}
 
+	_UnderReflDist ("Light Factor", Range(0.0,1.0)) = 1.0
+	
 }
 
 
@@ -70,7 +72,8 @@ sampler2D _Ramp2D;
 sampler2D _CameraDepthTexture;
 sampler2D _FalloffTex;
 float4 _DepthColorB;
-
+float _SuimonoIsLinear;
+float _UnderReflDist;
 
 struct Input {
 	float3 viewDir;
@@ -81,6 +84,11 @@ struct Input {
 
 fixed4 LightingBlinnPhongBRDF (SurfaceOutput s, fixed3 lightDir, half3 viewDir, fixed atten)
 {
+
+	// modulate light function
+	half4 inLight = _LightColor0;
+	inLight = lerp(inLight*0.0,inLight,_UnderReflDist);
+
 	half3 h = normalize (lightDir + viewDir);
 	
 	//fixed diff = max (0, dot (s.Normal, lightDir));
@@ -94,26 +102,43 @@ fixed4 LightingBlinnPhongBRDF (SurfaceOutput s, fixed3 lightDir, half3 viewDir, 
 	fixed NdotH = max(0, dot(s.Normal, h));
 	
 	//do diffuse wrap
-	float diff = (NdotL * 0.5) + 0.5;
+	//float diff = (NdotL * 0.5) + 0.5;
+	float diff = (NdotL);
 	float2 brdfUV = float2(NdotE * 1.0, diff);
 	float3 BRDF = tex2D(_Ramp2D, brdfUV.xy).rgb;
-	float3 BRDFColor = _LightColor0.rgb;
-	BRDFColor = lerp(BRDFColor,_LightColor0.rgb,BRDF.r);
+	float3 BRDFColor = inLight.rgb;
+	BRDFColor = lerp(BRDFColor,inLight.rgb,BRDF.r);
 	
 	//fixed3 c;
 	fixed3 r;
 	fixed4 col;
-	fixed4 lCol = lerp(_LightColor0,_DepthColorB,0.25);
+	fixed4 lCol = lerp(inLight,_DepthColorB,0.25);
 
 	r = (lCol.rgb*(h.g));
-	col.rgb = (s.Albedo * _LightColor0.rgb * atten * 2) + max(0.0,r) * BRDFColor;
-	col.a = s.Alpha + _LightColor0.a * _SpecColor.a * spec * atten;
+	//col.rgb = (s.Albedo * inLight.rgb * atten * 2) + max(0.0,r) * BRDFColor;
+	//col.a = s.Alpha + inLight.a * _SpecColor.a * spec * atten;
 	
-	col.rgb *= s.Gloss;
+	//col.rgb *= s.Gloss;
 	//col.rgb = s.Albedo;
-	col = saturate(col);
-	col.rgb *= (atten);
+	//col = saturate(col);
+	
+	//col.rgb *= (atten);
+	//col.rgb *= inLight.a;
 
+	//
+	col.rgb = (s.Albedo * inLight.rgb * atten) * r * s.Gloss;
+	//col.rgb = (s.Albedo * atten) * r * s.Gloss * (inLight.rgb);
+	col.a = s.Alpha * atten;// + inLight.a * _SpecColor.a * spec * atten;
+	col = saturate(col);
+
+	//col.rgb = nh;
+	//col.rgb = inLight.rgb * atten;
+	//col.rgb = atten;
+	
+	//linear conversion
+	half linearFac = lerp(1.0,2.2,_SuimonoIsLinear);
+	col.a = pow(col.a,linearFac);
+	col.rgb *= linearFac;
 
 	return col;
 }
@@ -151,6 +176,7 @@ void surf (Input IN, inout SurfaceOutput o) {
 	o.Albedo = lerp(_DepthColorB.rgb*0.25, half3(1,0,0), 0.0);
 	o.Albedo = lerp(half3(0,0,0), _DepthColorB.rgb*0.25, depthViz);
 	
+	o.Albedo = _DepthColorB.rgb;
 	
 	//o.Emission = o.Albedo;
 	o.Alpha = saturate(depthViz);
@@ -171,16 +197,18 @@ ENDCG
 
 
 
+
+
 // -------------------------------------
 //   UNDERWATER REFRACTION and BLURRING 
 // -------------------------------------
 GrabPass {
-	Tags {"Queue" = "Overlay+4"}
+	Tags {"Queue" = "Transparent"}
 	Name "BlurGrab"
 }
 
 
-Tags {"Queue"= "Overlay+5"}
+Tags {"Queue"= "Transparent"}
 Cull Back
 //Blend SrcAlpha OneMinusSrcAlpha
 ZWrite off
@@ -222,18 +250,24 @@ float _RefrSpeed;
 sampler2D _FalloffTex;
 float _isForward;
 float _isMac;
+float _UVReversal;
+float _SuimonoIsLinear;
+float _isHDR;
 
 
 fixed4 LightingSuimonoNoLight (SurfaceOutput s, fixed3 lightDir, half3 viewDir, fixed atten)
 {
 	fixed4 col;
 	
-	col.rgb = s.Albedo * lerp(fixed3(1,1,1),_DepthColorB.rgb,0.2);// * _LightColor0.a;
-	col.rgb *= s.Gloss;
+	col.rgb = s.Albedo;// * lerp(fixed3(1,1,1),_DepthColorB.rgb,0.2);
+	//col.rgb *= s.Gloss;
 	col.a = s.Alpha;
 
 	col = saturate(col);
-	col.rgb *= (atten);
+
+	//hdr conversion
+	half hdrFac = lerp(1.0,2.2,_isHDR*_SuimonoIsLinear);
+	col.rgb = pow(col.rgb,hdrFac);
 
 	return col;
 }
@@ -255,6 +289,14 @@ void surf (Input IN, inout SurfaceOutput o) {
 	
 	if (_isForward == 1.0 && _isMac == 0.0){
 		uvs.y = uvs.w - uvs.y;
+	}
+
+	if (_UVReversal == 1.0){
+		if (_isForward == 1.0){
+			uvs.y = IN.screenPos.y;
+		} else {
+			uvs.y = uvs.w - IN.screenPos.y;
+		}
 	}
 	
 	float4 uv1 = uvs;

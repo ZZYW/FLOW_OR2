@@ -19,6 +19,8 @@ public class Suimono_reflectionMirror : MonoBehaviour
  
     private static bool s_InsideRendering = false;
  
+	//private Renderer rendererComponent = this.GetComponent<Renderer>();
+
     // This is called when it's known that the object will be rendered by some
     // camera. We render reflections and do other updates here.
     // Because the script executes in edit mode, reflections for the scene view
@@ -80,6 +82,9 @@ public class Suimono_reflectionMirror : MonoBehaviour
         Vector3 euler = cam.transform.eulerAngles;
         reflectionCamera.transform.eulerAngles = new Vector3(0, euler.y, euler.z);
 
+		//setDepth
+		//reflectionCamera.clearFlags = CameraClearFlags.Depth;
+
         reflectionCamera.Render();
 
         reflectionCamera.transform.position = oldpos;
@@ -93,8 +98,8 @@ public class Suimono_reflectionMirror : MonoBehaviour
 		
  		//this.transform.parent.transform.renderer.material.SetTexture( "_ReflectionTex", m_ReflectionTexture );
 		//this.transform.parent.gameObject.Find("Suimono_Object").renderer.material.SetTexture( "_ReflectionTex", m_ReflectionTexture );
-		this.renderer.material.SetTexture( "_ReflectionTex", m_ReflectionTexture );
-		
+		//this.renderer.material.SetTexture( "_ReflectionTex", m_ReflectionTexture );
+		this.GetComponent<Renderer>().material.SetTexture( "_ReflectionTex", m_ReflectionTexture ); //edit for 5.0
 		
         // Set matrix on the shader that transforms UVs from object space into screen
         // space. We want to just project reflection texture on screen.
@@ -186,11 +191,11 @@ public class Suimono_reflectionMirror : MonoBehaviour
         if( !reflectionCamera ) // catch both not-in-dictionary and in-dictionary-but-deleted-GO
         {
             GameObject go = new GameObject( "Mirror Refl Camera id" + GetInstanceID() + " for " + currentCamera.GetInstanceID(), typeof(Camera), typeof(Skybox) );
-            reflectionCamera = go.camera;
+            reflectionCamera = go.GetComponent<Camera>();
             reflectionCamera.enabled = false;
             reflectionCamera.transform.position = transform.position;
             reflectionCamera.transform.rotation = transform.rotation;
-            reflectionCamera.gameObject.AddComponent("FlareLayer");
+            //reflectionCamera.gameObject.AddComponent("FlareLayer");
             go.hideFlags = HideFlags.HideAndDontSave;
             m_ReflectionCameras[currentCamera] = reflectionCamera;
         }        

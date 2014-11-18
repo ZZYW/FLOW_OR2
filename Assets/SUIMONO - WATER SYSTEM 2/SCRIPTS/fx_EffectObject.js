@@ -89,7 +89,16 @@ private var rulepass : boolean = false;
 private var timerAudio : float = 0.0;
 private var timerParticle : float = 0.0;
  
- 
+
+
+function OnDrawGizmos (){
+	var gizPos : Vector3 = transform.position;
+	gizPos.y += 0.03;
+	Gizmos.DrawIcon(gizPos, "gui_icon_fxobj.psd", true);
+	//Gizmos.color = Color(0.1,0.2,1.0,1.0);
+	//Gizmos.DrawWireSphere(gizPos, 0.09);
+}
+
  
 function Start () {
 
@@ -117,6 +126,7 @@ function Start () {
 
 
 function Update () {
+if (moduleObject != null){
 
 	//get objects while in editor mode
 	#if UNITY_EDITOR
@@ -131,7 +141,8 @@ function Update () {
 	#endif
 	
 	//set ui
-	useDarkUI = moduleObject.useDarkUI;
+	if (moduleObject != null)
+		useDarkUI = moduleObject.useDarkUI;
 	
 	//populate system names
 	if (fxObject != null){
@@ -153,7 +164,8 @@ function Update () {
 
 		//track position / speed
 		if (savePos != this.transform.position){
-			currentSpeed = Vector3.Distance(savePos,Vector3(this.transform.position.x,savePos.y,this.transform.position.z))/Time.deltaTime;
+			//currentSpeed = Vector3.Distance(savePos,Vector3(this.transform.position.x,savePos.y,this.transform.position.z))/Time.deltaTime;
+			currentSpeed = Vector3.Distance(savePos,Vector3(this.transform.position.x,this.transform.position.y,this.transform.position.z))/Time.deltaTime;
 		}
 		savePos = this.transform.position;
 
@@ -173,7 +185,7 @@ function Update () {
 		
 
 	}
-	
+}
 }
 
 
@@ -181,7 +193,7 @@ function Update () {
 
 function EmitSoundFX(){
 
-	if (audioObj != null){
+	if (audioObj != null && moduleObject != null){
 	if (rulepass){
 		moduleObject.AddSoundFX(audioObj,emitPos,Vector3(0,Random.Range(audioPit.x,audioPit.y),Random.Range(audioVol.x,audioVol.y)));
 	}
@@ -194,7 +206,8 @@ function EmitSoundFX(){
 
 function EmitFX () {
 if (Application.isPlaying){	
-	
+if (moduleObject != null){
+
 	//######################################
 	//##    CALCULATE TIMING and DELAYS   ##
 	//######################################
@@ -291,8 +304,9 @@ if (Application.isPlaying){
 		#else
 			var emitR : float = 90.0+transform.eulerAngles.y;
 		#endif
+		//emitR = 0.0;
 		if (!clampRot){
-			emitR = Random.Range(0.0,360.0);
+			emitR = Random.Range(-30,10.0);
 		}
 		var emitAR : float = Random.Range(-360.0,360.0);
 		
@@ -308,6 +322,10 @@ if (Application.isPlaying){
 
 		//EMIT PARTICLE SYSTEM
 		if (systemIndex-1 >= 0){
+			
+			emitPos.y += (emitS*0.4);
+			emitPos.x += Random.Range(-0.2,0.2);
+			emitPos.z += Random.Range(-0.2,0.2);
 			//moduleObject.AddFX(systemIndex-1, emitPos, 1*emitN, Random.Range(0.5,0.75)*emitS, Random.Range(0.0,1.0), emitV);
 			moduleObject.AddFX(systemIndex-1, emitPos, emitN, Random.Range(0.5,0.75)*emitS, emitR, emitAR, emitV, tintCol);
 		}
@@ -316,7 +334,7 @@ if (Application.isPlaying){
 	
 }
 }
-
+}
 
 
 
@@ -324,50 +342,48 @@ if (Application.isPlaying){
 function CheckRules( rule : Sui_FX_Rules, ruleNum : int){
 
 var rp : boolean = false;
-
-if (Application.isPlaying){	
-
-	var ruleData : float = speedThreshold;
 	
-	//get depth
-	//var depth = moduleObject.SuimonoGetHeight(transform.position,"object depth");
-	var depth = currentWaterPos;
+	if (Application.isPlaying){	
 	
-	if (ruleNum < effectData.Length) ruleData = effectData[ruleNum];
+		var ruleData : float = speedThreshold;
+		
+		//get depth
+		//var depth = moduleObject.SuimonoGetHeight(transform.position,"object depth");
+		var depth = currentWaterPos;
+		
+		if (ruleNum < effectData.Length) ruleData = effectData[ruleNum];
+		
+		if (rule == Sui_FX_Rules.isUnderWater){
+			if (depth > 0.0) rp = true;
+		}
+		if (rule == Sui_FX_Rules.isAboveWater){
+			if (depth <= 0.0) rp = true;
+		}
+		if (rule == Sui_FX_Rules.isAtWaterSurface){
+			if (depth < 0.25 && depth > -0.25) rp = true;
+		}
+		if (rule == Sui_FX_Rules.waterDepthGreater){
+			if (depth > ruleData) rp = true;
+		}
+		if (rule == Sui_FX_Rules.waterDepthLess){
+			if (depth < ruleData) rp = true;
+		}
+		if (rule == Sui_FX_Rules.speedIsGreater){
+			if (currentSpeed > ruleData) rp = true;
+		}
+		if (rule == Sui_FX_Rules.speedIsLess){
+			if (currentSpeed < ruleData) rp = true;
+		}
+		//if (rule == Sui_FX_Rules.enterFromAbove){
+			//if (currentSpeed < ruleData) rp = true;
+		//	rp = true;
+		//}
 	
-	if (rule == Sui_FX_Rules.isUnderWater){
-		if (depth > 0.0) rp = true;
+		else if (rule == Sui_FX_Rules.none){
+			rp = true;
+		}
+		
 	}
-	if (rule == Sui_FX_Rules.isAboveWater){
-		if (depth <= 0.0) rp = true;
-	}
-	if (rule == Sui_FX_Rules.isAtWaterSurface){
-		if (depth < 0.25 && depth > -0.25) rp = true;
-	}
-	if (rule == Sui_FX_Rules.waterDepthGreater){
-		if (depth > ruleData) rp = true;
-	}
-	if (rule == Sui_FX_Rules.waterDepthLess){
-		if (depth < ruleData) rp = true;
-	}
-	if (rule == Sui_FX_Rules.speedIsGreater){
-		if (currentSpeed > ruleData) rp = true;
-	}
-	if (rule == Sui_FX_Rules.speedIsLess){
-		if (currentSpeed < ruleData) rp = true;
-	}
-	//if (rule == Sui_FX_Rules.enterFromAbove){
-		//if (currentSpeed < ruleData) rp = true;
-	//	rp = true;
-	//}
-
-	else if (rule == Sui_FX_Rules.none){
-		rp = true;
-	}
-	
-	
-
-}
 
 return rp;
 

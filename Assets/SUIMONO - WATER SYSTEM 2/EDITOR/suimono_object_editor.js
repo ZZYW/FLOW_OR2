@@ -81,6 +81,9 @@ class suimono_object_editor extends Editor {
 		}
 		
 		
+		//SET SCREEN WIDTH
+		var setWidth = Screen.width-220;
+		if (setWidth < 120) setWidth = 120;
 		
 		
 		//SUIMONO LOGO
@@ -108,18 +111,23 @@ class suimono_object_editor extends Editor {
         if (target.showGeneral){
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 80, 18),"Surface Type");
 			target.typeIndex = EditorGUI.Popup(Rect(rt.x+margin+100, rt.y+30, 145, 18),"",target.typeIndex, target.typeOptions);
-			EditorGUI.LabelField(Rect(rt.x+margin+260, rt.y+30, 80, 18),"Overall Scale");
+			
+			//if (target.typeIndex == 0 && !PlayerSettings.useDirect3D11){
+			EditorGUI.LabelField(Rect(rt.x+margin+260, rt.y+30, 80, 18),"Infinite Scale");
 	        target.overallScale = EditorGUI.FloatField(Rect(rt.x+margin+350, rt.y+30, 30, 18),"",target.overallScale);
+			//}
 
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+60, 90, 18),"Flow Direction");
-        	target.flow_dir_degrees = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+60, 270, 18),"",target.flow_dir_degrees,0.0,360.0);
+        	target.flow_dir_degrees = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+60, setWidth, 18),"",target.flow_dir_degrees,0.0,360.0);
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+80, 90, 18),"Flow Speed");
-        	target.flowSpeed = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+80, 270, 18),"",target.flowSpeed,0.0,1.0);
+        	target.flowSpeed = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+80, setWidth, 18),"",target.flowSpeed,0.0,1.0);
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+100, 90, 18),"Foam Speed");
-			target.foamSpeed = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+100, 270, 18),"",target.foamSpeed,0.0,1.0);
+			target.foamSpeed = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+100, setWidth, 18),"",target.foamSpeed,0.0,1.0);
 
-  			target.enableCustomTextures = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+130, 170, 18),"Use Custom Textures", target.enableCustomTextures);
-  			target.enableDynamicReflections = EditorGUI.Toggle(Rect(rt.x+margin+210, rt.y+130, 200, 18),"Use Dynamic Reflection", target.enableDynamicReflections);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+130, 140, 18),"Use Custom Textures");
+  			target.enableCustomTextures = EditorGUI.Toggle(Rect(rt.x+margin+145, rt.y+130, 20, 18),"", target.enableCustomTextures);
+  			EditorGUI.LabelField(Rect(rt.x+margin+200, rt.y+130, 140, 18),"Use Dynamic Reflection");
+  			target.enableDynamicReflections = EditorGUI.Toggle(Rect(rt.x+margin+350, rt.y+130, 20, 18),"", target.enableDynamicReflections);
   				
 			GUILayout.Space(130.0);
 			
@@ -140,10 +148,14 @@ class suimono_object_editor extends Editor {
 	        target.showTess = EditorGUI.Foldout(Rect (rt.x+margin+3, rt.y+5, 20, 20), target.showTess, "");
 	        GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("TESSELLATION DX11"));
 	        if (target.showTess){
-				target.waveTessAmt = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Tessellation Factor",target.waveTessAmt,0.0,100.0);
-				target.waveTessMin = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Tessellation Start",target.waveTessMin,0.0,1.0);
-				target.waveTessSpread = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+70, 370, 18),"Tessellation Spread",target.waveTessSpread,0.0,1.0);
-				target.autoTess = EditorGUI.Toggle(Rect(rt.x+margin+10, rt.y+90, 370, 18),"Use Auto Tessellation",target.autoTess);
+	        	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Tessellation Factor");
+				target.waveTessAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.waveTessAmt,0.001,400.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Tessellation Start");
+				target.waveTessMin = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.waveTessMin,0.0,1.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 140, 18),"Tessellation Spread");
+				target.waveTessSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"",target.waveTessSpread,0.0,1.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 140, 18),"Use Auto Tessellation");
+				target.autoTess = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+90, setWidth, 18),"",target.autoTess);
 
 				target.waveFac = 1.0;
 	
@@ -173,31 +185,40 @@ class suimono_object_editor extends Editor {
         }
         if (target.showWaves){
         	if (target.typeIndex == 0 || target.typeIndex == 1){
-				target.waveHeight = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Deep Wave Height",target.waveHeight,0.01,10.0);
-				target.waveScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Deep Wave Scale",target.waveScale,0.0,1.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Deep Wave Height");
+				target.waveHeight = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.waveHeight,0.0,10.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Deep Wave Scale");
+				target.waveScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.waveScale,0.0,1.0);
 			} else {
 				target.waveHeight = 0.1;
-				target.waveScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Deep Wave Scale",target.waveScale,0.0,1.0);
-
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Deep Wave Scale");
+				target.waveScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.waveScale,0.0,1.0);
 			}
 
 			if (target.typeIndex == 0 || target.typeIndex == 1){
-				target.detailHeight = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+80, 370, 18),"Detail Wave Height",target.detailHeight,0.0,3.0);
-				target.detailScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+100, 370, 18),"Detail Wave Scale",target.detailScale,0.0,1.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+80, 140, 18),"Detail Wave Height");
+				target.detailHeight = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+80, setWidth, 18),"",target.detailHeight,0.0,3.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+100, 140, 18),"Detail Wave Scale");
+				target.detailScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+100, setWidth, 18),"",target.detailScale,0.0,1.0);
 			} else {
 				target.detailHeight = 0.0;
-				target.detailScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Detail Wave Scale",target.detailScale,0.0,1.0);
+				EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Detail Wave Scale");
+				target.detailScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.detailScale,0.0,1.0);
 			}
 		
 			if (target.typeIndex == 0 || target.typeIndex == 1){
-			target.normalShore = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+130, 370, 18),"Normalize Shoreline",target.normalShore,0.0,1.0);
-			target.waveShoreHeight = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+150, 370, 18),"Shallow Wave Height",target.waveShoreHeight,0.0,20.0);
-			target.waveShoreScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+170, 370, 18),"Shallow Wave Scale",target.waveShoreScale,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+130, 140, 18),"Normalize Shoreline");
+			target.normalShore = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+130, setWidth, 18),"",target.normalShore,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+150, 140, 18),"Shallow Wave Height");
+			target.waveShoreHeight = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+150, setWidth, 18),"",target.waveShoreHeight,0.0,20.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+170, 140, 18),"Shallow Wave Scale");
+			target.waveShoreScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+170, setWidth, 18),"",target.waveShoreScale,0.0,1.0);
         	
-        	target.waveBreakAmt = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+190, 370, 18),"Shallow Wave Breaks",target.waveBreakAmt,0.0,20.0);
+        	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+190, 140, 18),"Shallow Wave Breaks");
+        	target.waveBreakAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+190, setWidth, 18),"",target.waveBreakAmt,0.0,20.0);
         	
-        	
-        	target.shoreSpeed = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+210, 370, 18),"Shallow Wave Speed",target.shoreSpeed,0.0,1.0);
+        	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+210, 140, 18),"Shallow Wave Speed");
+        	target.shoreSpeed = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+210, setWidth, 18),"",target.shoreSpeed,0.0,1.0);
         	}
 
 
@@ -230,34 +251,55 @@ class suimono_object_editor extends Editor {
         GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("WATER SURFACE"));
         if (target.showSurface){
         
-            target.overallBright = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+30, 370, 18),"Overall Brightness",target.overallBright,0.0,10.0);
-        	target.overallTransparency = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+50, 370, 18),"Overall Transparency",target.overallTransparency,0.0,1.0);
+        	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Overall Brightness");
+            target.overallBright = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.overallBright,0.0,10.0);
+        	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Overall Transparency");
+        	target.overallTransparency = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.overallTransparency,0.0,1.0);
 
-			target.lightAbsorb = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+70, 370, 18),"Light Absorption",target.lightAbsorb,0.0,1.0);
-			target.lightRefract = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+90, 370, 18),"Refraction Amount",target.lightRefract,0.0,1.0);
-			target.refractShift = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+110, 370, 18),"Refraction Shift",target.refractShift,0.0,1.0);
-			//target.refractScale = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+90, 370, 18),"Refraction Scale",target.refractScale,0.0,1.0);
-			target.blurSpread = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+130, 370, 18),"Blur Amount",target.blurSpread,0.0,1.0);
-			target.surfaceSmooth = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+150, 370, 18),"Surface Roughness",target.surfaceSmooth,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 140, 18),"Light Absorption");
+			target.lightAbsorb = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"",target.lightAbsorb,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 140, 18),"Shadow Amount");
+			target.shadowAmount = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+90, setWidth, 18),"",target.shadowAmount,0.0,1.0);
 			
-			target.reflectDist = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+185, 370, 18),"Reflection Distance",target.reflectDist,0.0,1.0);
-			target.reflectSpread = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+205, 370, 18),"Reflection Spread",target.reflectSpread,0.0,1.0);
-			target.reflectionOffset = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+225, 370, 18),"Reflection Strength",target.reflectionOffset,0.0,1.0);
-			target.colorDynReflect = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+245, 370, 18),"Reflection Color",target.colorDynReflect);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+110, 140, 18),"Refraction Amount");
+			target.lightRefract = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+110, setWidth, 18),"",target.lightRefract,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+130, 140, 18),"Chromatic Shift");
+			target.refractShift = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+130, setWidth, 18),"",target.refractShift,0.0,1.0);
+
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+150, 140, 18),"Blur Amount");
+			target.blurSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+150, setWidth, 18),"",target.blurSpread,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+170, 140, 18),"Surface Roughness");
+			target.surfaceSmooth = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+170, setWidth, 18),"",target.surfaceSmooth,0.0,1.0);
 			
-            target.colorSurfHigh = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+280, 370, 18),"Surface High Color",target.colorSurfHigh);
-            target.colorSurfLow = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+300, 370, 18),"Surface Back Color",target.colorSurfLow);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+205, 140, 18),"Reflection Distance");
+			target.reflectDist = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+205, setWidth, 18),"",target.reflectDist,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+225, 140, 18),"Reflection Spread");
+			target.reflectSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+225, setWidth, 18),"",target.reflectSpread,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+245, 140, 18),"Reflection Strength");
+			target.reflectionOffset = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+245, setWidth, 18),"",target.reflectionOffset,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+265, 140, 18),"Reflection Color");
+			target.colorDynReflect = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+265, setWidth, 18),"",target.colorDynReflect);
+			
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+300, 140, 18),"Surface High Color");
+			target.colorSurfHigh = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+300, setWidth, 18),"",target.colorSurfHigh);
             
-            target.depthColor = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+340, 370, 18),"Surface Color",target.depthColor);
-            target.depthColorR = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+360, 370, 18),"Depth Color (Shallow)",target.depthColorR);
-            target.depthColorG = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+380, 370, 18),"Depth Color (Medium)",target.depthColorG);
-            target.depthColorB = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+400, 370, 18),"Depth Color (Deep)",target.depthColorB);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+340, 140, 18),"Surface Blend Color");
+            target.depthColor = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+340, setWidth, 18),"",target.depthColor);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+360, 140, 18),"Surface Overlay Color");
+            target.colorSurfLow = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+360, setWidth, 18),"",target.colorSurfLow);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+380, 140, 18),"Depth Color (Shallow)");
+            target.depthColorR = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+380, setWidth, 18),"",target.depthColorR);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+400, 140, 18),"Depth Color (Medium)");
+            target.depthColorG = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+400, setWidth, 18),"",target.depthColorG);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+420, 140, 18),"Depth Color (Deep)");
+            target.depthColorB = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+420, setWidth, 18),"",target.depthColorB);
             
-            
-            target.specColorL = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+440, 370, 18),"Specular Color",target.specColorL);
-            target.specColorH = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+460, 370, 18),"Specular Hot",target.specColorH);
-            target.specScatterAmt = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+480, 370, 18),"Specular Amount",target.specScatterAmt,0.0,1.0);
-            target.specScatterWidth = EditorGUI.Slider(Rect(rt.x+margin+10, rt.y+500, 370, 18),"Hot Specular Amount",target.specScatterWidth,0.0,1.0);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+460, 140, 18),"Back Diffuse Color");
+            target.specColorL = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+460, setWidth, 18),"",target.specColorL);
+           	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+480, 140, 18),"Specular Hot");
+            target.specColorH = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+480, setWidth, 18),"",target.specColorH);
+            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+500, 140, 18),"Hot Specular Amount");
+            target.specScatterWidth = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+500, setWidth, 18),"",target.specScatterWidth,0.0,1.0);
                 
             
             //target.tideColor = EditorGUI.ColorField(Rect(rt.x+margin+10, rt.y+500, 370, 18),"Tide Color",target.tideColor);
@@ -297,30 +339,30 @@ class suimono_object_editor extends Editor {
         if (target.showFoam){
 			
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 90, 18),"Foam Scale");
-        	target.foamScale = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+30, 270, 18),"",target.foamScale,0.0,1.0);
+        	target.foamScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+30, setWidth, 18),"",target.foamScale,0.0,1.0);
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 90, 18),"Foam Color");
-        	target.foamColor = EditorGUI.ColorField(Rect(rt.x+margin+110, rt.y+50, 270, 18),"",target.foamColor);
+        	target.foamColor = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.foamColor);
         	
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+80, 90, 18),"Edge Foam");
-        	target.foamAmt = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+80, 270, 18),"",target.foamAmt,0.0,1.0);
+        	target.foamAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+80, setWidth, 18),"",target.foamAmt,0.0,1.0);
 
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+100, 90, 18),"Wave Foam");
-        	target.hFoamHeight = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+100, 270, 18),"",target.hFoamHeight,0.0,1.0);
-			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+120, 90, 18),"Wave Amount");
-        	target.hFoamAmt = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+120, 270, 18),"",target.hFoamAmt,0.0,1.0);
+        	target.hFoamHeight = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+100, setWidth, 18),"",target.hFoamHeight,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+120, 90, 18),"Wave Height");
+        	target.hFoamAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+120, setWidth, 18),"",target.hFoamAmt,0.0,1.0);
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+140, 90, 18),"Wave Spread");
-        	target.hFoamSpread = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+140, 270, 18),"",target.hFoamSpread,0.0,1.0);
+        	target.hFoamSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+140, setWidth, 18),"",target.hFoamSpread,0.0,1.0);
 
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+160, 90, 18),"Shallow Foam");
-        	target.shallowFoamAmt = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+160, 270, 18),"",target.shallowFoamAmt,0.0,2.0);
+        	target.shallowFoamAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+160, setWidth, 18),"",target.shallowFoamAmt,0.0,2.0);
         	
         	
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+190, 90, 18),"Edge Blend");
-        	target.edgeBlend = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+190, 270, 18),"",target.edgeBlend,0.0,0.01);
+        	target.edgeBlend = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+190, setWidth, 18),"",target.edgeBlend,0.009,0.2);
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+210, 90, 18),"Edge Amount");
-        	target.edgeSpread = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+210, 270, 18),"",target.edgeSpread,0.0,1.0);
+        	target.edgeSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+210, setWidth, 18),"",target.edgeSpread,0.0,1.0);
         	EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+230, 90, 18),"Edge Color");
-        	target.edgeColor = EditorGUI.ColorField(Rect(rt.x+margin+110, rt.y+230, 270, 18),"",target.edgeColor);
+        	target.edgeColor = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+230, setWidth, 18),"",target.edgeColor);
 
 
 			GUILayout.Space(245.0);
@@ -347,25 +389,26 @@ class suimono_object_editor extends Editor {
             //if (target.enableUnderwaterFX){
 			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 90, 18),"Enable Debris");
 			target.enableUnderDebris = EditorGUI.Toggle(Rect(rt.x+margin+110, rt.y+30, 30, 18),"", target.enableUnderDebris);
-			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 90, 18),"Reflection Dist");
-            target.reflectDistUnderAmt = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+50, 270, 18),"",target.reflectDistUnderAmt,0.0,1.0);
+			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 90, 18),"Light Factor");
+            target.reflectDistUnderAmt = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.reflectDistUnderAmt,0.0,1.0);
+
             
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 90, 18),"Refract Amt");
-            target.underRefractionAmount = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+70, 270, 18),"",target.underRefractionAmount,0.0,1.0);
+            target.underRefractionAmount = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"",target.underRefractionAmount,0.0,1.0);
             
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 90, 18),"Refract Scale");
-            target.underRefractionScale = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+90, 270, 18),"",target.underRefractionScale,0.0,3.0);
+            target.underRefractionScale = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+90, setWidth, 18),"",target.underRefractionScale,0.0,3.0);
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+110, 90, 18),"Refract Speed");
-            target.underRefractionSpeed = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+110, 270, 18),"",target.underRefractionSpeed,0.0,1.0);
+            target.underRefractionSpeed = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+110, setWidth, 18),"",target.underRefractionSpeed,0.0,1.0);
                        
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+130, 90, 18),"Blur Amount");
-            target.underBlurAmount = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+130, 270, 18),"",target.underBlurAmount,0.0,1.0);
+            target.underBlurAmount = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+130, setWidth, 18),"",target.underBlurAmount,0.0,1.0);
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+150, 90, 18),"Fog Distance");
-			target.underwaterFogDist = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+150, 270, 18),"",target.underwaterFogDist,0.0,1.0);
+			target.underwaterFogDist = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+150, setWidth, 18),"",target.underwaterFogDist,0.0,1.0);
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+170, 90, 18),"Fog Spread");
-			target.underwaterFogSpread = EditorGUI.Slider(Rect(rt.x+margin+110, rt.y+170, 270, 18),"",target.underwaterFogSpread,0.0,0.005);
+			target.underwaterFogSpread = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+170, setWidth, 18),"",target.underwaterFogSpread,0.0,0.005);
             EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+190, 90, 18),"Fog Color");
-			target.underwaterColor = EditorGUI.ColorField(Rect(rt.x+margin+110, rt.y+190, 270, 18),"",target.underwaterColor);
+			target.underwaterColor = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+190, setWidth, 18),"",target.underwaterColor);
             //}
             
             
@@ -379,31 +422,30 @@ class suimono_object_editor extends Editor {
         
         
         
-        // INTERACTIVE SETTINGS
-        rt = GUILayoutUtility.GetRect(buttonText, buttonStyle);
-        EditorGUI.DrawPreviewTexture(Rect(rt.x+margin,rt.y,387,24),divTex);
-        target.showEffects = EditorGUI.Foldout(Rect (rt.x+margin+3, rt.y+5, 20, 20), target.showEffects, "");
-        GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("INTERACTION"));
-        if (target.showEffects){
+        // SHADOW SETTINGS
+        //rt = GUILayoutUtility.GetRect(buttonText, buttonStyle);
+        //EditorGUI.DrawPreviewTexture(Rect(rt.x+margin,rt.y,387,24),divTex);
+        //target.showEffects = EditorGUI.Foldout(Rect (rt.x+margin+3, rt.y+5, 20, 20), target.showEffects, "");
+        //GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("SHADOW SETTINGS"));
+        //if (target.showEffects){
 
-        	//SPLASH EFFECTS
-            EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 105, 18),"Enable Effects");
-			target.splashIsOn = EditorGUI.Toggle(Rect(rt.x+margin+125, rt.y+30, 30, 18),"", target.splashIsOn);
-			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 105, 18),"Update Speed");
-			target.UpdateSpeed = EditorGUI.FloatField(Rect(rt.x+margin+125, rt.y+50, 30, 18),"", target.UpdateSpeed);
-			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 105, 18),"Ripple Sensitivity");
-			target.rippleSensitivity = EditorGUI.FloatField(Rect(rt.x+margin+125, rt.y+70, 30, 18),"", target.rippleSensitivity);
-			EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 105, 18),"Splash Sensitivity");
-			target.splashSensitivity = EditorGUI.FloatField(Rect(rt.x+margin+125, rt.y+90, 30, 18),"", target.splashSensitivity);
-			
-			
-			GUILayout.Space(95.0);
-		}
-        GUILayout.Space(10.0);
+            //EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 140, 18),"Enable Shadow Casting");
+			//target.castshadowIsOn = EditorGUI.Toggle(Rect(rt.x+margin+165, rt.y+30, 30, 18),"", target.castshadowIsOn);
+            //EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+50, 140, 18),"Cast Shadow Strength");
+			//target.castshadowStrength = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+50, setWidth, 18),"",target.castshadowStrength,0.0,1.0);
+            //EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+70, 140, 18),"Cast Shadow Fadeout");
+			//target.castshadowFade = EditorGUI.Slider(Rect(rt.x+margin+165, rt.y+70, setWidth, 18),"",target.castshadowFade,0.0,1.0);
+            //EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+90, 140, 18),"Cast Shadow Color");
+			//target.castshadowColor = EditorGUI.ColorField(Rect(rt.x+margin+165, rt.y+90, setWidth, 18),"",target.castshadowColor);
+
+			//GUILayout.Space(95.0);
+		//}
+        //GUILayout.Space(10.0);
         
         
         
         
+              
         
         
         // PRESET MANAGER
@@ -413,66 +455,74 @@ class suimono_object_editor extends Editor {
         GUI.Label (Rect (rt.x+margin+20, rt.y+5, 300, 20), GUIContent ("PRESET MANAGER"));
         if (target.showPresets){
 
-			//select preset
-			//EditorGUI.LabelField(Rect(rt.x+margin+10, rt.y+30, 80, 18),"Surface Type");
-			//target.typeIndex = EditorGUI.Popup(Rect(rt.x+margin+100, rt.y+30, 145, 18),"",target.typeIndex, target.typeOptions);
-			EditorGUI.LabelField(Rect(rt.x+margin+18, rt.y+24, 100, 18),"Transition:");
-			target.presetTransIndexFrm = EditorGUI.Popup(Rect(rt.x+margin+85, rt.y+24, 80, 13),"",target.presetTransIndexFrm, target.presetOptions);
-			EditorGUI.LabelField(Rect(rt.x+margin+167, rt.y+24, 100, 18),"-->");
-			target.presetTransIndexTo = EditorGUI.Popup(Rect(rt.x+margin+194, rt.y+24, 80, 13),"",target.presetTransIndexTo, target.presetOptions);
-			target.presetTransitionTime = EditorGUI.FloatField(Rect(rt.x+margin+285, rt.y+23, 30, 18),target.presetTransitionTime);
+
+			var presetWidth = Screen.width-78;
+			if (presetWidth < 120) presetWidth = 120;
+		
+		
+			//select preset file
+			EditorGUI.LabelField(Rect(rt.x+margin+18, rt.y+24, 110, 18),"Use Preset File:");
+			target.presetFileIndex = EditorGUI.Popup(Rect(rt.x+margin+125, rt.y+24, 258, 13),"",target.presetFileIndex, target.presetFiles);
+			
+			//transition preset
+			EditorGUI.LabelField(Rect(rt.x+margin+18, rt.y+44, 100, 18),"Transition:");
+			target.presetTransIndexFrm = EditorGUI.Popup(Rect(rt.x+margin+85, rt.y+44, 80, 13),"",target.presetTransIndexFrm, target.presetOptions);
+			EditorGUI.LabelField(Rect(rt.x+margin+167, rt.y+44, 100, 18),"-->");
+			target.presetTransIndexTo = EditorGUI.Popup(Rect(rt.x+margin+194, rt.y+44, 80, 13),"",target.presetTransIndexTo, target.presetOptions);
+			target.presetTransitionTime = EditorGUI.FloatField(Rect(rt.x+margin+285, rt.y+43, 30, 18),target.presetTransitionTime);
     		var transAction : String = "Start";
         	if (target.presetStartTransition) transAction = (target.presetTransitionCurrent*target.presetTransitionTime).ToString("F2");//"Stop";
-        	if(GUI.Button(Rect(rt.x+margin+324, rt.y+24, 60, 15), transAction)){
+        	if(GUI.Button(Rect(rt.x+margin+324, rt.y+44, 60, 15), transAction)){
         		target.presetStartTransition = !target.presetStartTransition;
         	}
-
+			
 			
 			//start presets
 			GUI.color = Color(1,1,1,0.1);
-			EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+45,364,5),bgPresetSt);
+			EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+65,presetWidth,5),bgPresetSt); //364
 			
 			//fill presets
 			//for (var pr:int = 0; pr < 4; pr++){
 			//presetOptions
-			for (var pr:int = 0; pr < target.presetOptions.length; pr++){
-				
+			for (var pr:int = 0; pr <= target.presetOptions.length; pr++){
+			
+				if (pr > 0){
 				//background
 				GUI.color = Color(1,1,1,0.1);
 				if ((pr/2.0) > Mathf.Floor(pr/2.0)) GUI.color = Color(1,1,1,0.13);
 				//if (target.presetUseIndex == pr) GUI.color = Color(1,0.5,0,0.9);
 				if (localPresetIndex == pr) GUI.color = highlightColor;
-				EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+50+(pr*13),364,12),bgPreset);
+				EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+70+(pr*13),presetWidth,12),bgPreset); //364
 				
 				//preset name/button
 				if (setRename != (pr+1)){
 					GUI.color = Color(1,1,1,0.75);
-            		EditorGUI.LabelField(Rect(rt.x+margin+32, rt.y+47+(pr*13), 300, 16), target.presetOptions[pr]);
-            		GUI.color = Color(1,1,1,0.1);
-            		if (GUI.Button(Rect(rt.x+margin+32, rt.y+47+(pr*13)+2, 300, 13),"")){
+            		EditorGUI.LabelField(Rect(rt.x+margin+32, rt.y+67+(pr*13), 300, 16), target.presetOptions[pr-1]);
+            		GUI.color = Color(1,1,1,0.12);
+            		if (GUI.Button(Rect(rt.x+margin+32, rt.y+67+(pr*13)+2, (presetWidth-72), 13),"")){
             			localPresetIndex = pr;
-            			target.presetIndex = pr;
+            			target.presetIndex = pr-1;
             			target.PresetLoad();
             		}
             	}
             	
             	//rename
             	GUI.color = Color(1,1,1,0.4);
-				if (GUI.Button(Rect(rt.x+margin+21, rt.y+47+(pr*13)+2, 11, 11),"")){
+				if (GUI.Button(Rect(rt.x+margin+21, rt.y+67+(pr*13)+2, 11, 11),"")){
 					Debug.Log("rename");
 					setRename = (pr +1);
 				}
 				if (setRename == (pr+1)){
-					renName = EditorGUI.TextField(Rect(rt.x+margin+32, rt.y+49+(pr*13), 200, 14), renName);
+					renName = EditorGUI.TextField(Rect(rt.x+margin+32, rt.y+69+(pr*13), 200, 14), renName);
 					GUI.color = highlightColor2;
-					if (GUI.Button(Rect(rt.x+margin+230, rt.y+49+(pr*13), 30, 14),"OK")){
+					if (GUI.Button(Rect(rt.x+margin+230, rt.y+69+(pr*13), 30, 14),"OK")){
 						setRename = 0;
-						target.PresetRename(target.presetOptions[pr],renName);
+						target.PresetRename(target.presetOptions[pr-1],renName);
 						renName="";
 						
 					}
 					GUI.color = Color(1,1,1,0.4);
-					if (GUI.Button(Rect(rt.x+margin+262, rt.y+49+(pr*13), 20, 14),"X")){
+					if (GUI.Button(Rect(rt.x+margin+262, rt.y+69+(pr*13), 20, 14),"X")){
 						setRename = 0;
 					}
             	}
@@ -480,23 +530,50 @@ class suimono_object_editor extends Editor {
             	//add/delete
             	GUI.color = Color(1,1,1,0.35);
             	if (localPresetIndex == pr) GUI.color = highlightColor;
-				if (GUI.Button(Rect(rt.x+margin+334, rt.y+48+(pr*13)+1, 25, 12),"+")) target.PresetSave(target.presetOptions[pr]);
-            	if (GUI.Button(Rect(rt.x+margin+358, rt.y+48+(pr*13)+1, 25, 12),"-")) target.PresetDelete(target.presetOptions[pr]);
+				if (GUI.Button(Rect(rt.x+margin+(presetWidth-35), rt.y+68+(pr*13)+1, 25, 12),"+")) target.PresetSave(target.presetOptions[pr-1]);
+            	if (GUI.Button(Rect(rt.x+margin+(presetWidth-9), rt.y+68+(pr*13)+1, 25, 12),"-")) target.PresetDelete(target.presetOptions[pr-1]);
 
            		GUI.color = Color(1,1,1,1);
 
+           	} else {
+           	
+           	
+           		//background
+				GUI.color = Color(1,1,1,0.1);
+				if ((pr/2.0) > Mathf.Floor(pr/2.0)) GUI.color = Color(1,1,1,0.13);
+				//if (target.presetUseIndex == pr) GUI.color = Color(1,0.5,0,0.9);
+				if (localPresetIndex == pr) GUI.color = highlightColor;
+				EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+70+(pr*13),presetWidth,12),bgPreset); //364
+				
+				//preset name/button
+				if (setRename != (pr+1)){
+					GUI.color = Color(1,1,1,0.75);
+            		EditorGUI.LabelField(Rect(rt.x+margin+32, rt.y+67+(pr*13), 300, 16), "- NONE -");
+            		GUI.color = Color(0,0,0,0.06);
+            		if (GUI.Button(Rect(rt.x+margin+32, rt.y+67+(pr*13)+2, (presetWidth-15), 13),"")){
+            			localPresetIndex = 0;
+            			target.presetIndex = -1;
+            			target.PresetLoad();
+            		}
+            	}
+
+           	
+           	}
            	}
            	//end presets
            	GUI.color = Color(1,1,1,0.1);
-			EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+61+((pr-1)*13),364,23),bgPresetNd);
+			EditorGUI.DrawPreviewTexture(Rect(rt.x+margin+20,rt.y+81+((pr-1)*13),presetWidth,23),bgPresetNd);
 			
 			GUI.color = Color(1,1,1,1);
 			GUI.color = Color(1,1,1,0.55);
-			if (GUI.Button(Rect(rt.x+margin+320, rt.y+66+((pr-1)*13), 65, 18),"+ NEW")) target.PresetSave("");
+			if (GUI.Button(Rect(rt.x+margin+(presetWidth-49), rt.y+86+((pr-1)*13), 65, 18),"+ NEW")) target.PresetSave("");
 			
 			GUI.color = colorEnabled;
 			
-			GUILayout.Space(60.0+(pr*12));
+			GUILayout.Space(80.0+(pr*12)+10);
+			
+			
+			
 		}
         GUILayout.Space(10.0);
         

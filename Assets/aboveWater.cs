@@ -11,8 +11,8 @@ public class aboveWater : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-//		if (Time.time > 50.0f) {
-				if(audio.volume <= 0.2f){
+
+			if(audio.volume <= 0.2f){
 					audio.volume += 0.0001f;
 				}
 
@@ -22,6 +22,6 @@ public class aboveWater : MonoBehaviour {
 				}
 			}
 
-//		}
+
 	}
 }

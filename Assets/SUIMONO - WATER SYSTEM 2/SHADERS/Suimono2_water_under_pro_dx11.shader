@@ -35,8 +35,8 @@ Properties {
 	_SpecColorL ("Reflect Specular Color", Color) = (0.5, 0.5, 0.5, 1)
 	
 	_DynReflColor ("Reflection Dynamic", Color) = (1.0, 1.0, 1.0, 0.5)
-	_ReflDist ("Reflection Distance", Float) = 1000
-	_ReflBlend ("Reflection Blend", Range(0.0,0.1)) = 0.01
+	_ReflDist ("Reflection Distance", Float) = 1000.0
+	_ReflBlend ("Reflection Blend", Range(0.002,0.1)) = 0.01
 	_ReflBlur ("Reflection Blur", Range (0.0, 0.125)) = 0.01
 	_ReflectionTex ("Reflection", 2D) = "white" {}
 
@@ -58,7 +58,6 @@ Properties {
 	_FoamSpread ("Foam Spread", Range (0.0, 1.0)) = 0.5
 	_FoamColor ("Foam Color", Color) = (1,1,1,1)
 	_FoamRamp ("Foam Ramp", 2D) = "white" {}
-	_FoamOverlay ("Foam Overlay (RGB)", 2D) = "white" {}
 	_FoamTex ("Foam Texture (RGB)", 2D) = "white" {}
 
 	_EdgeBlend ("Edge Spread", Range (0.04,5.0)) = 10.0
@@ -68,7 +67,8 @@ Properties {
 	_BumpStrength ("Normal Strength", Float) = 0.9
 	_ReflectStrength ("Reflection Strength", Float) = 1.0
 		
-	_CubeMobile ("Cubemap Mobile", CUBE) = "white" {}
+	_CubeTex ("Cubemap reflections", CUBE) = "white" {}
+	_CubeBDRF ("Cubemap BDRF", CUBE) = "white" {}
     
 	_MasterScale ("Master Scale", Float) = 1.0
 	_UnderReflDist ("Under Reflection", Float) = 1.0
@@ -86,7 +86,20 @@ Properties {
 	
 	_Ramp2D ("_BRDF Ramp", 2D) = "white" {}
 	_RimPower ("RimPower", Range(0.0,10.0)) = 1.0
-		
+
+	_castshadowEnabled ("shadow Enabled", Float) = 1.0
+	_castshadowStrength ("shadow Strength", Float) = 1.0
+	_castshadowFade ("shadow Fade", Float) = 1.0
+	_castshadowColor ("Shadow Color", Color) = (0,0,0,1)
+
+	_suimono_uvx ("uvx", Float) = 1.0
+	_suimono_uvy ("uvy", Float) = 1.0
+
+	_suimono_DeepWaveHeight ("Deep Wave Height", Float) = 1.0
+	_suimono_DetailHeight ("Detail Wave Height", Float) = 1.0
+	_suimono_detScale ("Detail Scale", Float) = 1.0
+
+	_useDynamicReflections ("Use DynamicReflections", Float) = 1.0
 	
 }
 
@@ -111,11 +124,12 @@ Subshader
 
 
 
-
-
-
-
-
+// -------------------------------------
+//   GET SCREEN INFO 
+// -------------------------------------
+GrabPass {
+	Name "BlurGrab"
+}
 
 
 
@@ -125,15 +139,18 @@ Subshader
 
 
 // ---------------------------------
-//   SURFACE REFLECTIONS
+//   WATER DEPTH and SURFACE
 // ---------------------------------
-Tags {"RenderType"="Transparent" "Queue"= "Overlay"}
-cull front
+Tags {"RenderType"="Opaque" "Queue"= "Overlay+1"} //overlay+1
 Blend SrcAlpha OneMinusSrcAlpha
-ZWrite On
+Cull Front
+ZWrite Off
+
+ 
 
 
 CGPROGRAM
+
 
 struct appdata {
 	float4 vertex : POSITION;
@@ -142,84 +159,128 @@ struct appdata {
 	float2 texcoord : TEXCOORD0;
 };
 
+
 #pragma target 5.0
+#include "UnityCG.cginc"
 #include "SuimonoFunctionsDX11.cginc"
-#pragma surface surf SuimonoUnderSurfacedx addshadow vertex:vertexSuimonoDisplaceDX11 tessellate:tessDistance nolightmap
+#pragma surface surf SuimonoDepth addshadow vertex:vertexSuimonoDisplaceDX11 tessellate:tessDistance nolightmap noambient
 #include "Tessellation.cginc"
 
+
+
+//float _CenterHeight;
+//float _MaxVariance;
+float4 _HighColor;
+float4 _LowColor;
 float4 _DepthColor;
 float4 _DepthColorR;
 float4 _DepthColorG;
 float4 _DepthColorB;
-float _DepthAmt;
+float4 _DynReflColor;
+float4 _FoamColor;
 float _SpecScatterWidth;
 float _SpecScatterAmt;
 float _RimPower;
 sampler2D _Ramp2D;
+sampler2D _ReflectionTex;
+float _OverallTrans;
+float _OverallBright;
+
+float _ReflectStrength;
+float _ReflDist;
+float _ReflBlend;
+
+float4 origBGColor;
+float4 depthColor;
+float4 reflectColor;
+float4 reflectCubeColor;
+float _RefrStrength;
+float _RefrShift;
+float4 refractColor;
+float edgeFactor;
+float foamFactor;
+float _FoamSpread;
 float4 _SpecColorH;
 float4 _SpecColorL;
-float4 _DynReflColor;
-float4 _UnderColor;
-float _OverallTrans;
+float _blurSamples;
+float _BlurSpread;
+float _HeightFoamAmount;
+float _HeightFoamSpread;
+float _FoamHeight;
+float _ShadowAmt;
+float highcolorFac;
 
+float _useDynamicReflections;
 
-inline fixed4 LightingSuimonoUnderSurfacedx (SurfaceOutput s, fixed3 lightDir, half3 viewDir, fixed atten)
+float4 reflectCUBE;
+float4 reflectBDRF;
+
+//tenkoku variables
+float4 _Tenkoku_SkyColor;
+float4 _Tenkoku_HorizonColor;
+float4 _Tenkoku_GlowColor;
+float _Tenkoku_Ambient;
+
+//shadow variables
+float _castshadowEnabled;
+float _castshadowStrength;
+float _castshadowFade;
+float4 _castshadowColor;
+
+float mask;
+float mask1;
+float mask2;
+float mask3;
+float mask4;
+float maskcastshadow;
+
+inline fixed4 LightingSuimonoDepth (SurfaceOutput s, fixed3 lightDir, half3 viewDir, fixed atten)
 {
 
+	//calculate final color
+	fixed4 c;
+
+	//calculate dot products
 	half3 h = normalize (lightDir + viewDir);
+	half3 hview2 = normalize (half3(lightDir.x,lightDir.y,1.0-lightDir.z) + (viewDir*0.9));
+	fixed NdotView = dot(s.Normal, viewDir);
+	fixed NdotLight = dot(s.Normal, lightDir);
+	half lightFac = NdotLight + (lerp(0.3,1.0,NdotView)*_LightColor0.a); //temp
+
+
+	//calculate specular
+	float nh = saturate(dot(s.Normal, hview2));
+	float spec = (pow(nh, _SpecScatterWidth*2.0)*(atten));
+	spec += (pow(nh, _SpecScatterWidth*128.0)*10.0*(mask2)*_SpecColorH.a*(atten));
+	spec += (pow(nh, _SpecScatterWidth*4.0*128.0)*850.0*(mask2)*_SpecColorH.a*(atten));
+	spec *= saturate(lerp(1.0,-5.0,NdotView));
+
+
+	//final reflection RGB
+	c.rgb = fixed3(0,0,0); //default color
 	
-	float NdotL = dot(s.Normal, lightDir);
-	float NdotE = dot(s.Normal, viewDir);
-	fixed NdotH = max(0, dot(s.Normal, h));
-	float NdotS = dot(lightDir, viewDir);
-	float NdotV = dot(h, viewDir*6.0);
+	//linear conversion
+	//half linearFac = lerp(1.0,0.4545,_SuimonoIsLinear);
+	//c.a = pow(c.a,linearFac);
+	//c.rgb *= linearFac;
+
+	//fade distance	
+	c.a = saturate(1.0-(mask3));
+
+	//final reflection RGB
+	c.rgb = fixed3(0,0,0);
+	half dielectricRamp = saturate(lerp(-0.5,2,lightFac)) * saturate(lerp(1.0,-1.0,dot(s.Normal,viewDir)))*NdotLight;
+
+	//calculate reflection
+	//c.rgb = saturate(reflectCUBE.rgb * _DynReflColor.rgb * _LightColor0.rgb * atten * 1.0);
+	c.rgb = saturate(_DynReflColor.rgb * _LightColor0.rgb * atten * 1.0);
+	c.rgb = lerp(c.rgb,saturate(reflectColor.rgb * atten * dielectricRamp),_useDynamicReflections);
 	
-	fixed diff = max (0, dot (s.Normal, fixed3(-lightDir.x,lightDir.y,lightDir.z)));
+	c.rgb *= _LightColor0.rgb * atten;
 	
-	float nh = max (0, dot (s.Normal, diff));
-	float spec = saturate(pow(nh,  _SpecScatterAmt));
-	float spec2 = saturate(pow(nh,  _SpecScatterWidth)*150.0);
+	c.a = saturate(dielectricRamp * (1.0-mask3) * 5.0);
+	c.a = saturate((dielectricRamp) * (1.0-mask3) * 5.0);
 	
-	fixed4 c;
-	
-	//c.rgb = s.Albedo*lerp(diff,1.0,);
-	c.rgb = s.Albedo;//*diff;//*lerp(diff,1.0,s.Alpha);
-	c.rgb *= 0.15;
-		
-	c.a = diff*2.0;
-
-
-	c.a *= lerp(c.a,0.0,s.Alpha);
-	c.a = lerp(1.0,c.a,lerp(0.5,1.0,s.Alpha));
-
-
-	c = saturate(c);
-	
-	c.a *= _OverallTrans;
-	
-	return c;
-}
-
-
-
-
-
-inline fixed4 LightingSuimonoUnderSurfacedx_PrePass (SurfaceOutput s, half4 light)
-{
-
-	fixed diff = max (0, dot (s.Normal, fixed3(-light.x,light.y,light.z)));
-	
-	float nh = max (0, dot (s.Normal, diff));
-	float spec = saturate(pow(nh,  _SpecScatterAmt));
-	float spec2 = saturate(pow(nh,  _SpecScatterWidth)*150.0);
-	
-	fixed4 c;
-	
-	c.rgb = s.Albedo*diff;
-	c.a = diff*2.0;
-
-
-	c = saturate(c);
 	return c;
 }
 
@@ -230,208 +291,168 @@ float4 tessDistance (appdata v0, appdata v1, appdata v2) {
 }
 
 struct Input {
-	float4 screenPos;
+	float4 screenPos;	
 	float2 uv_Surface1;
-	//float2 uv_Surface2;
-	float2 uv_WaveLargeTex;  
+	float2 uv_WaveLargeTex;
+	float2 uv_FlowMap;
 	float3 worldRefl;
     INTERNAL_DATA
 };
 
 
-//sampler2D _CameraDepthTexture;
-//float _ReflBlend;
-float _ReflDist;
-float _ReflectStrength; 
-float useReflection;
-float _UnderReflDist;
-//float _EdgeBlend;
-sampler2D _ReflectionTex;
-samplerCUBE _CubeMobile;
+float _EdgeBlend;
+samplerCUBE _CubeTex;
+samplerCUBE _CubeBDRF;
+sampler2D _CameraDepthTexture;
+sampler2D _CameraNormalsTexture;
+sampler2D _GrabTexture;
+sampler2D _DepthRamp;
+sampler2D _FoamTex;
+float _isForward;
+float _UVReversal;
+float suimonoHeight;
+float _ShallowFoamAmt;
 
 void surf (Input IN, inout SurfaceOutput o) {
-	 
-	//calculate distance masks
-	float mask = (((IN.screenPos.w - _UnderReflDist))*0.02);
-	if (mask > 1.0) mask = 1.0;
-	if (mask < 0.0) mask = 0.0;
 
+	//Calculate Normal
+	half3 waveFac;
+	half3 wfa;
+	half3 wfb;
+	half wfMult = 0.15;
+	float2 waveSpd = float2(_suimono_uvx*0.4,_suimono_uvy*0.4);
+	wfa = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_Surface1.x*wfMult+waveSpd.x,IN.uv_Surface1.y*wfMult+waveSpd.y))));
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_Surface1.x*wfMult-waveSpd.x-0.5,IN.uv_Surface1.y*wfMult-waveSpd.y-0.5))));
+	waveFac = normalize(float3(wfa.xy + wfb.xy, wfa.z*wfb.z)); //blend function
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_Surface1.x*wfMult-waveSpd.x-0.25,IN.uv_Surface1.y*wfMult))));
+	waveFac = normalize(float3(waveFac.xy + wfb.xy, waveFac.z*wfb.z)); //blend function
 	
-	// calculate normals
-	half4 d1 = tex2D(_WaveLargeTex,IN.uv_Surface1);
-	half4 n1 = tex2D(_WaveLargeTex,IN.uv_WaveLargeTex);
-	half4 n2 = tex2D(_WaveLargeTex,IN.uv_WaveLargeTex*14.0);
+	
+	half3 waveFac1;
+	float2 waveSpd1 = float2(_suimono_uvx,_suimono_uvy);
+	wfa = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x+waveSpd1.x,IN.uv_WaveLargeTex.y+waveSpd1.y))));
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x-waveSpd1.x-0.5,IN.uv_WaveLargeTex.y-waveSpd1.y-0.5))));
+	waveFac1 = normalize(float3(wfa.xy + wfb.xy, wfa.z*wfb.z)); //blend function
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x-waveSpd1.x-0.25,IN.uv_WaveLargeTex.y))));
+	waveFac1 = normalize(float3(waveFac1.xy + wfb.xy, waveFac1.z*wfb.z)); //blend function
+	
+	
+	half3 waveFac2;
+	half wf2Mult = 5.0;
+	float2 waveSpd2 = float2(_suimono_uvx,_suimono_uvy);
+	wfa = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf2Mult+waveSpd2.x,IN.uv_WaveLargeTex.y*wf2Mult+waveSpd2.y))));
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf2Mult-waveSpd2.x-0.5,IN.uv_WaveLargeTex.y*wf2Mult-waveSpd2.y-0.5))));
+	waveFac2 = normalize(float3(wfa.xy + wfb.xy, wfa.z*wfb.z)); //blend function
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf2Mult-waveSpd2.x-0.25,IN.uv_WaveLargeTex.y*wf2Mult))));
+	waveFac2 = normalize(float3(waveFac2.xy + wfb.xy, waveFac2.z*wfb.z)); //blend function
+	
+	half3 waveFac3;
+	half wf3Mult = 10.0;
+	float2 waveSpd3 = float2(_suimono_uvx,_suimono_uvy);
+	wfa = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf3Mult+waveSpd3.x,IN.uv_WaveLargeTex.y*wf3Mult+waveSpd3.y))));
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf3Mult-waveSpd3.x-0.5,IN.uv_WaveLargeTex.y*wf3Mult-waveSpd3.y-0.5))));
+	waveFac3 = normalize(float3(wfa.xy + wfb.xy, wfa.z*wfb.z)); //blend function
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf3Mult-waveSpd3.x-0.25,IN.uv_WaveLargeTex.y*wf3Mult))));
+	waveFac3 = normalize(float3(waveFac3.xy + wfb.xy, waveFac3.z*wfb.z)); //blend function
+	
+	half3 waveFac4;
+	half wf4Mult = 8.0;
+	float2 waveSpd4 = float2(_suimono_uvx*4.0,_suimono_uvy*4.0);
+	wfa = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf4Mult+waveSpd4.x,IN.uv_WaveLargeTex.y*wf4Mult+waveSpd4.y))));
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf4Mult-waveSpd4.x-0.5,IN.uv_WaveLargeTex.y*wf4Mult-waveSpd4.y-0.5))));
+	waveFac4 = normalize(float3(wfa.xy + wfb.xy, wfa.z*wfb.z)); //blend function
+	wfb = normalize(UnpackNormal(tex2D(_WaveLargeTex,float2(IN.uv_WaveLargeTex.x*wf4Mult-waveSpd4.x-0.25,IN.uv_WaveLargeTex.y*wf4Mult))));
+	waveFac4 = normalize(float3(waveFac4.xy + wfb.xy, waveFac4.z*wfb.z)); //blend function
+	
+	//wrap normal to shore normalization
+	half3 flow = tex2D(_FlowMap, IN.uv_FlowMap).rgb;
+	
+	half3 norm1 = waveFac;
+	norm1 = lerp(half3(0,0,1),norm1,_suimono_DeepWaveHeight/10.0);
+	norm1 = lerp(norm1,half3(0,0,1),flow.r*normalShore);
 
-	o.Normal = lerp(half3(0,0,1),UnpackNormal(d1),saturate(lerp(0.0,2.0,_BumpStrength)));
-	o.Normal += UnpackNormal(n1) * saturate(lerp(0.0,2.0,_BumpStrength));
-	o.Normal -= UnpackNormal(n2) * saturate(lerp(-1.0,1.0,_BumpStrength));
-	o.Normal = normalize(o.Normal);
+	half3 norm2 = waveFac1;
+	wfb = lerp(half3(0,0,1),waveFac2,_BumpStrength);
+	norm2 = normalize(float3(norm2.xy + wfb.xy, norm2.z*wfb.z)); //blend function
+	wfb = lerp(half3(0,0,1),waveFac3,_BumpStrength);
+	norm2 = normalize(float3(norm2.xy + wfb.xy, norm2.z*wfb.z)); //blend function
+	norm2 = lerp(half3(0,0,1),norm2,_suimono_DetailHeight/3.0); //fade out with height setting
+	
+	norm1 = normalize(norm1);
+	norm2 = normalize(norm2);
+ 	o.Normal = normalize(float3(norm1.xy + norm2.xy, norm1.z*norm2.z)); //blend function
+ 	o.Normal = lerp(o.Normal,half3(0,0,1),mask1); //fade out in distance
+	o.Normal = lerp(o.Normal,half3(0,0,1),edgeFactor); //fade out edge
+ 	
+	//wrap normal to shore calculations
+	float4 getflowmap = tex2D(_FlowMap, IN.uv_FlowMap);
+ 	float2 flowmap = float2(saturate(getflowmap.r + getflowmap.g),getflowmap.b) * 2.0 - 1.0;
+	flowmap.x = lerp(0.0,flowmap.x,_FlowShoreScale);
+	flowmap.y = lerp(0.0,flowmap.y,_FlowShoreScale);
+	half4 waveTex = tex2D(_WaveTex, float2((IN.uv_FlowMap.x*shoreWaveScale)+flowOffX+flowmap.x,(IN.uv_FlowMap.y*shoreWaveScale)+flowOffY+flowmap.y));
+	o.Normal = lerp(o.Normal,half3(0,0,1),waveTex.g * _WaveShoreHeight * flow.g);
 	
 	
-	// decode cube / mobile reflection
-	float nUV = 1.0;
-	nUV += (o.Normal.y*_ReflectStrength*1.5)-(1.0*_ReflectStrength*0.25);
-	half3 cubeRef = half3(0,0,1);
-	cubeRef = texCUBE(_CubeMobile, WorldReflectionVector (IN, o.Normal)*float4(1.0,nUV,1.0,1.0)).rgb; 
-	cubeRef = lerp(_DynReflColor.rgb,(cubeRef.rgb*_DynReflColor.rgb*_DynReflColor.a),_DynReflColor.a);
+	
+	//set UVs
+	float4 uv0 = IN.screenPos; uv0.xy;
+	uv0.x -= (0.05*_RefrStrength*o.Normal.x)*(1.0-edgeFactor);
+	uv0.z -= (0.05*_RefrStrength*o.Normal.z)*(1.0-edgeFactor);
+	uv0.y += (0.2*_RefrStrength*o.Normal.y)*(1.0-edgeFactor);
+	
+	//calculate distance mask
+	mask = saturate((uv0.w - lerp(60.0,20.0,(_ReflDist/50.0)))*_ReflBlend);
+	mask1 = saturate((uv0.w - lerp(160.0,20.0,(5.0/25.0)))*0.002);
+	mask2 = saturate((uv0.w - lerp(0.0,20.0,(5.0/25.0)))*0.01);
+	mask3 = saturate((uv0.w - lerp(-150.0,60.0,(10.0/25.0)))*0.01);
+	mask4 = saturate((uv0.w - lerp(0.0,60.0,(2.0/25.0)))*0.5);
+	maskcastshadow = saturate((uv0.w - lerp(0.0,60.0,(_castshadowFade/100.0)))*0.01);
+	
+	
+	//calculate height color factor
+	//highcolorFac = saturate(IN.worldPos.y-(suimonoHeight+((_suimono_DeepWaveHeight+_suimono_DetailHeight)*0.15)));
 	
 	
 	// decode dynamic reflection
 	float4 uv1 = IN.screenPos; uv1.xy;
-	uv1.y += (o.Normal.y*4.0*_BumpStrength*1.5)-(1.0*4.0*_BumpStrength*0.25);
+	float disAmt = (_ReflectStrength);
+	uv1.x -= (0.1*disAmt)*o.Normal.x;
+	uv1.z -= (0.1*disAmt)*o.Normal.z;
+	uv1.y += (1.0*disAmt)*o.Normal.y;
 	half4 refl = tex2Dproj( _ReflectionTex, UNITY_PROJ_COORD(uv1));
+	reflectColor.rgb = refl.rgb;//half3(cDepth,cDepth,cDepth);
+	reflectColor.a = refl.a;//(1.0-refl.a)*mask2;
 	
-	// calculate dynamic reflection colors
-	half3 dynRef = lerp(_DynReflColor.rgb,(refl.rgb*2.5*_DynReflColor.rgb*_DynReflColor.a),_DynReflColor.a);
-	dynRef = refl.rgb*4.0;
-
-	// switch in cube reflection if dynamic not available
-	o.Albedo = lerp(cubeRef,dynRef,useReflection);
-
-	// set alpha by distance
-	o.Alpha = lerp(0.8,1.0,mask);
+	
+	// decode cube / mobile reflection
+	half3 cubeRef = texCUBE(_CubeTex, WorldReflectionVector(IN, o.Normal)).rgb;
+	reflectCUBE.rgb = cubeRef.rgb;
+	//half3 cubeBDRF = texCUBE(_CubeBDRF, WorldReflectionVector(IN, o.Normal)).rgb;
+	//reflectBDRF.rgb = cubeBDRF.rgb;
 
 
+	//calculate UVs
+	float4 uvs = IN.screenPos;
+	if (_isForward == 1.0){
+		uvs.y = uvs.w - uvs.y;
+	}
+	if (_UVReversal == 1.0){
+		if (_isForward == 1.0){
+			uvs.y = IN.screenPos.y;
+		} else {
+			uvs.y = uvs.w - IN.screenPos.y;
+		}
+	}
+	
+	//calculate original background
+	//origBGColor = tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(uvs));
+
+	//add final detail normal (preferred blend function)
+	float3 AddNDet = lerp(lerp(waveFac4*2.0,half3(0,0,1),1.0-_BumpStrength),half3(0,0,1),mask3);
+ 	o.Normal = normalize(float3(o.Normal.xy + AddNDet.xy, o.Normal.z*AddNDet.z)); //whiteout function
+	
 }
-ENDCG
 
-
-
-
-
-//-------------------
-//    FOAM
-//-------------------
-Tags {"Queue"= "Transparent"}
-Cull Front
-Blend SrcAlpha OneMinusSrcAlpha
-ZWrite On
-
-
-CGPROGRAM
-#pragma target 3.0
-#include "SuimonoFunctions.cginc"
-#pragma surface surf Lambert addshadow vertex:vertexSuimonoDisplace nolightmap noambient
-#pragma glsl
-#include <UnityCG.cginc>
-
-
-float4 _DepthColor;
-float4 _DepthColorR;
-float4 _DepthColorG;
-float4 _DepthColorB;
-float _DepthAmt;
-float _SpecScatterWidth;
-float _SpecScatterAmt;
-float _RimPower;
-sampler2D _Ramp2D;
-float4 _SpecColorH;
-float4 _SpecColorL;
-
-
-
-struct Input {
-	float2 uv_FoamTex;
-	float2 uv_FoamOverlay;
-	float2 uv_Surface1;
-	float2 uv_WaveLargeTex;
-	float2 uv_WaveTex;
-	float2 uv_FlowMap;
-	float4 screenPos;
-	float4 color : Color;
-};
-
-
-
-float _FoamHeight;
-float _HeightFoamAmount;
-float _HeightFoamSpread;
-sampler2D _WaveRamp;
-float4 _FoamColor;
-float4 _EdgeColor;
-sampler2D _FoamTex;
-sampler2D _CameraDepthTexture;
-float _EdgeSpread;
-float _FoamSpread;
-sampler2D _FoamRamp;
-sampler2D _FoamOverlay;
-
-
-void surf (Input IN, inout SurfaceOutput o) {
-
-	float4 foamFade = float4(1.0,_FoamSpread,0.0,0.0);
-	float4 edgeBlendFactors = float4(1.0, 0.0, 0.0, 0.0);
-	half depth = UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos)));
-	depth = LinearEyeDepth(depth); 
-	
-	edgeBlendFactors = saturate(foamFade * (depth-IN.screenPos.w));		
-	float4 foamSpread = (_FoamColor - (foamFade.w) * float4(0.15, 0.03, 0.01, 0.0));
-	foamSpread.a = (edgeBlendFactors.y);
-	foamSpread.a = saturate(1.0-foamSpread.a);
-
-	float4 foamFade2 = float4(1.0,_EdgeSpread,0.0,0.0);
-	float4 edgeBlendFactors2 = float4(1.0, 0.0, 0.0, 0.0);
-	edgeBlendFactors2 = saturate(foamFade2 * (depth-IN.screenPos.w));		
-	float4 foamSpread2 = (_FoamColor - (foamFade2.w) * float4(0.15, 0.03, 0.01, 0.0));
-	foamSpread2.a = 1.0-edgeBlendFactors2.y;
-	half fspread2 = saturate(foamSpread2.a);
-	
-
-	// calculate normals
-	half4 d1 = tex2D(_WaveLargeTex,IN.uv_Surface1);
-	half4 n1 = tex2D(_WaveLargeTex,IN.uv_WaveLargeTex);
-	half4 n2 = tex2D(_WaveLargeTex,IN.uv_WaveLargeTex*14.0);
-	//o.Normal = UnpackNormal(d1);
-	//o.Normal += UnpackNormal(n1);
-	//o.Normal += UnpackNormal(n2) *_BumpStrength;
-	//o.Normal = normalize(o.Normal); //final detail
-	//o.Normal.z = lerp(0.9,1.1,o.Normal.z);
-	//o.Normal = lerp(half3(0,1,0),o.Normal,_BumpStrength);
-		
-	//init foam components
-	half4 getflowmap = tex2D(_FlowMap,IN.uv_FlowMap);
-	half3 texwave = tex2D(_WaveMap, IN.uv_FlowMap).rgb;
-	half4 foamTexture = tex2D(_FoamTex, IN.uv_FoamTex);
-	half4 foamTextureb = tex2D(_FoamTex, half2(IN.uv_FoamTex.x*0.1,IN.uv_FoamTex.y*0.1));
-	half4 foamTexturec = tex2D(_FoamTex, half2(IN.uv_FoamTex.x*2.5,IN.uv_FoamTex.y*2.5));
-	half4 foamOverlay = tex2D(_FoamOverlay, IN.uv_FoamOverlay*2.0);
-	half alphaCalc = 0.0;
-
-	//new height foam
-	half4 w1 = tex2D(_Surface1,IN.uv_WaveLargeTex);
-	half4 w2 = tex2D(_Surface1,IN.uv_Surface1);
-	half hfoam = lerp(0.0,1.0,(w2.r + (w1.r * (w2.r*_HeightFoamSpread)) *1.5))*_HeightFoamAmount * (_WaveHeight/(_FoamHeight*10.0));
-		
-	//edge foam
-	half alphaCalc2 = 0.0;
-	half fspread3 = saturate(foamSpread.a+((getflowmap.g * 0.3))*texwave.g + hfoam);
-	alphaCalc2 = lerp(0.0,foamTexture.b,tex2D(_FoamRamp, float2(1.0-fspread3, 0.5)).b);
-	alphaCalc2 += lerp(0.0,foamTexture.r,tex2D(_FoamRamp, float2(1.0-fspread3, 0.5)).r);
-	alphaCalc2 += lerp(0.0,foamTexture.g,tex2D(_FoamRamp, float2(1.0-fspread3, 0.5)).g);
-	if (alphaCalc2 > 1.0) alphaCalc2 = 1.0;
-	alphaCalc2 *= _FoamColor.a;
-	alphaCalc2 *= tex2D(_FoamRamp, float2(1.0-fspread3, 0.5)).a * 2.0;
-	if (alphaCalc2 >= 0.99) alphaCalc2 = 0.99;
-	if (alphaCalc2 < 0.0) alphaCalc2 = 0.0;
-	
-	//shore foam
-	half edgeFac = lerp(-10.0,1.0,getflowmap.r)*0.5;
-	if (edgeFac < 0.0) edgeFac = 0.0;
-	
-	//edge line
-	half edgePos = ((fspread2) * _EdgeColor.a);
-
-	//final color and alpha
-	o.Alpha = (saturate(alphaCalc2)*foamOverlay.a)+(edgePos);
-	o.Albedo = lerp(_FoamColor.rgb*0.5,foamOverlay.rgb*_FoamColor.rgb*2.0,o.Alpha);
-	o.Albedo = lerp(o.Albedo,_EdgeColor.rgb*1.4,edgePos);
-	
-	o.Specular = 0.05;
-	o.Gloss = 1.0;
-	_SpecColor.rgb = _FoamColor.rgb*0.8;
-	
-			
-}
 ENDCG
 
 
@@ -441,6 +462,12 @@ ENDCG
 
 
 
+
+
+
+
+
+
 }
-FallBack "Diffuse"
+//FallBack "Diffuse"
 }
