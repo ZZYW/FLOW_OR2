@@ -17,8 +17,6 @@ public class sinkTerrain : MonoBehaviour {
 			isHit=true;		
 			tempBreath = temp.GetComponent<myReading>().deepBreathCounter;
 		}
-		
-	//if ((Input.GetKey (KeyCode.F))) {
 
 		if(tempBreath > 10){
 			Destroy(gameObject);

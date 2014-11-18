@@ -14,7 +14,7 @@ public class belowWater : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (temp.transform.position.y >= 3.0f && audio.volume < 0.4f && temp2.GetComponent<myReading> ().deepBreathCounter <= 10) {
+		if (temp.transform.position.y >= 5.0f && audio.volume < 0.4f && temp2.GetComponent<myReading> ().deepBreathCounter <= 10) {
 			audio.volume = audio.volume + 0.002f;
 		}
 		if (temp2.GetComponent<myReading> ().deepBreathCounter > 10 && audio.volume > 0) {

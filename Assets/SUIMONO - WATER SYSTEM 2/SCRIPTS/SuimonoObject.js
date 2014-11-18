@@ -175,7 +175,7 @@ var UpdateSpeed : float = 0.5;
 var rippleSensitivity : float = 0.0;
 var splashSensitivity :float = 0.2;
 var isinwater : boolean = false;
-var isUnderwater : boolean = false;
+public var isUnderwater : boolean = false;
 var atDepth : float = 0.0;
 private var setvolume = 0.65;
 private var ringsTime = 0.0;
@@ -359,7 +359,7 @@ function Start () {
 
 
 function LateUpdate(){
-
+	
 	//store component references
 	thisrendererComponent = thisSuimonoObject.GetComponent(Renderer);
 	scalerendererComponent = suimonoScaleObject.GetComponent(Renderer);

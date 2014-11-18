@@ -8,9 +8,11 @@ public class raiseWater : MonoBehaviour
 	public bool isRaise;
 	public float raiseAcc;
 	public float timer;
+	public bool isDescent;
 
 	void Start ()
 	{
+		isDescent = false;
 		isRaise = false;
 		raiseAcc = 0.0f;
 	}
@@ -20,12 +22,18 @@ public class raiseWater : MonoBehaviour
 
 		timer = Time.time;
 
-		if (isRaise) {
+		if (isRaise && isDescent==false) {
 			Vector3 pos = gameObject.transform.position;
 			raiseAcc += 0.00005f;
 			pos.y = pos.y + raiseAcc;
 			gameObject.transform.position = pos;
 		} 
+
+		if(isDescent){
+			Vector3 pos = gameObject.transform.position;
+			pos.y = pos.y - 0.02f;
+			gameObject.transform.position = pos;
+		}
 
 	}
 
