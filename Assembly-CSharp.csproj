@@ -66,6 +66,7 @@
      <Compile Include="Assets\aboveWater.cs" />
      <Compile Include="Assets\belowWater.cs" />
      <Compile Include="Assets\breath_fadeout.cs" />
+     <Compile Include="Assets\centralController.cs" />
      <Compile Include="Assets\citySound.cs" />
      <Compile Include="Assets\countBuilding.cs" />
      <Compile Include="Assets\destroyMe.cs" />

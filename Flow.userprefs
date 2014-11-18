@@ -1,14 +1,8 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/analogRead.cs">
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/raiseWater.cs">
     <Files>
-      <File FileName="Assets/analogRead.cs" Line="68" Column="33" />
-      <File FileName="Assets/sphereColor.cs" Line="13" Column="1" />
-      <File FileName="Assets/Standard Assets/Image Effects (Pro Only)/_Sources/Shaders/GrayscaleEffect.shader" Line="1" Column="1" />
-      <File FileName="Assets/Uniduino/Scripts/SerialPortProxy.cs" Line="1" Column="1" />
-      <File FileName="Assets/Uniduino/Scripts/Arduino.cs" Line="1" Column="1" />
-      <File FileName="Assets/Uniduino/Scripts/UniduinoSetup.cs" Line="1" Column="1" />
-      <File FileName="Assets/analogRead.cs" Line="108" Column="2" />
+      <File FileName="Assets/raiseWater.cs" Line="17" Column="11" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
